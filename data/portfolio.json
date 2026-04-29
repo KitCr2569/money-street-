@@ -1,0 +1,59 @@
+{
+  "holdings": [
+    {
+      "symbol": "TSM",
+      "lots": [
+        {
+          "shares": 7.1456661,
+          "price": 363.2745,
+          "date": "2026-03-11",
+          "id": "422dd94e-2d68-4faf-915b-61a9080ba350"
+        }
+      ]
+    },
+    {
+      "symbol": "ORCL",
+      "lots": [
+        {
+          "shares": 2.0979284,
+          "price": 172.8801,
+          "date": "2026-03-11",
+          "id": "172644e9-a9a9-482f-a412-7b3b10a4fa99"
+        }
+      ]
+    },
+    {
+      "symbol": "TSLA",
+      "lots": [
+        {
+          "shares": 2.5211361,
+          "price": 435.6131,
+          "date": "2026-03-11",
+          "id": "b6a3b754-64c5-422c-bd16-43b4aa89da89"
+        }
+      ]
+    },
+    {
+      "symbol": "CRWD",
+      "lots": [
+        {
+          "shares": 0.7970015,
+          "price": 508.92,
+          "date": "2026-03-11",
+          "id": "f00080da-17ca-4e66-8cc4-588831e33a4c"
+        }
+      ]
+    },
+    {
+      "symbol": "RBLX",
+      "lots": [
+        {
+          "shares": 15.031267,
+          "price": 94.4161,
+          "date": "2026-03-11",
+          "id": "3b369746-d4d5-4cef-b953-aa1aea3ee0f6"
+        }
+      ]
+    }
+  ]
+}

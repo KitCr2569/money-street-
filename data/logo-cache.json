@@ -1,0 +1,550 @@
+{
+  "AAPL": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/AAPL.png",
+    "fetchedAt": "2026-03-12T18:26:44.863Z"
+  },
+  "TSLA": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/TSLA.png",
+    "fetchedAt": "2026-03-12T18:26:45.154Z"
+  },
+  "NVDA": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/NVDA.png",
+    "fetchedAt": "2026-03-12T18:26:45.479Z"
+  },
+  "MSFT": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/MSFT.png",
+    "fetchedAt": "2026-03-12T18:27:48.869Z"
+  },
+  "GOOGL": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/GOOG.png",
+    "fetchedAt": "2026-03-12T18:27:49.174Z"
+  },
+  "AVGO": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/AVGO.png",
+    "fetchedAt": "2026-03-12T18:27:49.466Z"
+  },
+  "PLTR": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/PLTR.png",
+    "fetchedAt": "2026-03-12T18:27:49.787Z"
+  },
+  "META": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/FB.png",
+    "fetchedAt": "2026-03-12T18:27:50.095Z"
+  },
+  "AMZN": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/AMZN.png",
+    "fetchedAt": "2026-03-12T18:27:50.506Z"
+  },
+  "TSM": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/2330.TW.png",
+    "fetchedAt": "2026-03-12T18:28:15.785Z"
+  },
+  "ALAB": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950633134526.png",
+    "fetchedAt": "2026-03-12T18:53:09.154Z"
+  },
+  "ASTS": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950711601196.png",
+    "fetchedAt": "2026-03-12T18:53:09.758Z"
+  },
+  "AVAV": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/AVAV.png",
+    "fetchedAt": "2026-03-12T18:53:10.042Z"
+  },
+  "EOSE": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950742072646.png",
+    "fetchedAt": "2026-03-12T18:53:10.331Z"
+  },
+  "GDXW": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:10.618Z"
+  },
+  "GLD": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:10.997Z"
+  },
+  "IONQ": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950779345556.png",
+    "fetchedAt": "2026-03-12T18:53:11.290Z"
+  },
+  "IREN": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950792146376.png",
+    "fetchedAt": "2026-03-12T18:53:11.575Z"
+  },
+  "LLY": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/LLY.png",
+    "fetchedAt": "2026-03-12T18:53:11.855Z"
+  },
+  "NVTS": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950785244176.png",
+    "fetchedAt": "2026-03-12T18:53:12.141Z"
+  },
+  "ONDS": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/ONDS.png",
+    "fetchedAt": "2026-03-12T18:53:13.260Z"
+  },
+  "PANW": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/PANW.png",
+    "fetchedAt": "2026-03-12T18:53:14.733Z"
+  },
+  "PAVE": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:15.017Z"
+  },
+  "QQQI": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:15.868Z"
+  },
+  "QQQM": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:16.178Z"
+  },
+  "RKLB": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950811866506.png",
+    "fetchedAt": "2026-03-12T18:53:16.468Z"
+  },
+  "SLV": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:16.759Z"
+  },
+  "SOFI": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/SOFI.png",
+    "fetchedAt": "2026-03-12T18:53:17.058Z"
+  },
+  "TGLS": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/TGLS.png",
+    "fetchedAt": "2026-03-12T18:53:17.343Z"
+  },
+  "VOO": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:17.631Z"
+  },
+  "VT": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:17.914Z"
+  },
+  "XLE": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:18.197Z"
+  },
+  "XLI": {
+    "url": "",
+    "fetchedAt": "2026-03-12T18:53:18.490Z"
+  },
+  "BZ=F": {
+    "url": "",
+    "fetchedAt": "2026-03-13T13:49:04.461Z"
+  },
+  "DXY-USD": {
+    "url": "",
+    "fetchedAt": "2026-03-13T13:50:30.721Z"
+  },
+  "RBRK": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950458187056.png",
+    "fetchedAt": "2026-03-13T13:50:48.215Z"
+  },
+  "BTC-USD": {
+    "url": "",
+    "fetchedAt": "2026-03-13T13:51:25.181Z"
+  },
+  "BMBL": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/BMBL.png",
+    "fetchedAt": "2026-03-13T13:56:57.143Z"
+  },
+  "SNDK": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/950906460416.png",
+    "fetchedAt": "2026-03-13T14:26:09.320Z"
+  },
+  "NFLX": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/NFLX.png",
+    "fetchedAt": "2026-03-13T14:26:16.409Z"
+  },
+  "MMM": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:13.742Z"
+  },
+  "AOS": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:14.050Z"
+  },
+  "ABT": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:14.352Z"
+  },
+  "ABBV": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:14.658Z"
+  },
+  "ACN": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:14.981Z"
+  },
+  "ADBE": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:15.287Z"
+  },
+  "AMD": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:15.583Z"
+  },
+  "AES": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:15.891Z"
+  },
+  "AFL": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:16.194Z"
+  },
+  "A": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:16.536Z"
+  },
+  "APD": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:16.867Z"
+  },
+  "ABNB": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:17.177Z"
+  },
+  "AKAM": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:17.481Z"
+  },
+  "ALB": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:17.782Z"
+  },
+  "ARE": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:18.079Z"
+  },
+  "ALGN": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:18.374Z"
+  },
+  "ALLE": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:18.703Z"
+  },
+  "LNT": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:19.000Z"
+  },
+  "ALL": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:19.307Z"
+  },
+  "GOOG": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:19.607Z"
+  },
+  "MO": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:19.902Z"
+  },
+  "AMCR": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:20.200Z"
+  },
+  "AEE": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:20.504Z"
+  },
+  "AEP": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:20.806Z"
+  },
+  "AXP": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:21.100Z"
+  },
+  "AIG": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:21.395Z"
+  },
+  "AMT": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:21.691Z"
+  },
+  "AWK": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:21.995Z"
+  },
+  "AMP": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:22.294Z"
+  },
+  "AME": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:22.587Z"
+  },
+  "AMGN": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:22.882Z"
+  },
+  "APH": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:23.184Z"
+  },
+  "ADI": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:23.489Z"
+  },
+  "AON": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:23.788Z"
+  },
+  "APA": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:24.085Z"
+  },
+  "APO": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:24.383Z"
+  },
+  "AMAT": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:24.689Z"
+  },
+  "APP": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:24.984Z"
+  },
+  "APTV": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:25.281Z"
+  },
+  "ACGL": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:25.579Z"
+  },
+  "ADM": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:25.901Z"
+  },
+  "ARES": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:26.223Z"
+  },
+  "ANET": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:26.646Z"
+  },
+  "AJG": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:26.975Z"
+  },
+  "AIZ": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:27.336Z"
+  },
+  "T": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:27.635Z"
+  },
+  "ATO": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:27.931Z"
+  },
+  "ADSK": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:28.245Z"
+  },
+  "ADP": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:28.561Z"
+  },
+  "AZO": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:28.858Z"
+  },
+  "AVB": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:29.165Z"
+  },
+  "AVY": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:29.468Z"
+  },
+  "AXON": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:29.769Z"
+  },
+  "BKR": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:30.069Z"
+  },
+  "BALL": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:30.386Z"
+  },
+  "BAC": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:30.692Z"
+  },
+  "BAX": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:31.026Z"
+  },
+  "BDX": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:31.321Z"
+  },
+  "BRK.B": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:31.678Z"
+  },
+  "BBY": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:31.983Z"
+  },
+  "TECH": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:32.292Z"
+  },
+  "BIIB": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:32.586Z"
+  },
+  "BLK": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:32.887Z"
+  },
+  "BX": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:33.204Z"
+  },
+  "XYZ": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:33.517Z"
+  },
+  "BK": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:33.814Z"
+  },
+  "BA": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:34.118Z"
+  },
+  "BKNG": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:34.417Z"
+  },
+  "BSX": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:34.756Z"
+  },
+  "BMY": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:35.075Z"
+  },
+  "BR": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:35.373Z"
+  },
+  "BRO": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:35.667Z"
+  },
+  "BF.B": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:35.962Z"
+  },
+  "BLDR": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:36.265Z"
+  },
+  "BG": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:36.615Z"
+  },
+  "BXP": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:37.147Z"
+  },
+  "CHRW": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:37.472Z"
+  },
+  "CDNS": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:37.838Z"
+  },
+  "CPT": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:38.173Z"
+  },
+  "CPB": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:38.477Z"
+  },
+  "COF": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:39.294Z"
+  },
+  "CAH": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:39.612Z"
+  },
+  "CCL": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:39.928Z"
+  },
+  "CARR": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:40.642Z"
+  },
+  "CVNA": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:40.941Z"
+  },
+  "CAT": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:41.463Z"
+  },
+  "CBOE": {
+    "url": "",
+    "fetchedAt": "2026-03-15T06:37:41.761Z"
+  },
+  "CBRE": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/CBRE.png",
+    "fetchedAt": "2026-03-15T06:37:43.307Z"
+  },
+  "CDW": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/CDW.png",
+    "fetchedAt": "2026-03-15T06:37:43.665Z"
+  },
+  "COR": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/ABC.png",
+    "fetchedAt": "2026-03-15T06:37:43.972Z"
+  },
+  "CNC": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/CNC.png",
+    "fetchedAt": "2026-03-15T06:37:44.280Z"
+  },
+  "CNP": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/CNP.png",
+    "fetchedAt": "2026-03-15T06:37:44.591Z"
+  },
+  "CF": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/CF.png",
+    "fetchedAt": "2026-03-15T06:37:44.894Z"
+  },
+  "CRL": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/CRL.png",
+    "fetchedAt": "2026-03-15T06:37:45.194Z"
+  },
+  "SCHW": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/SCHW.png",
+    "fetchedAt": "2026-03-15T06:37:45.501Z"
+  },
+  "CHTR": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/CHTR.png",
+    "fetchedAt": "2026-03-15T06:37:45.816Z"
+  },
+  "DOW": {
+    "url": "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/DOW.png",
+    "fetchedAt": "2026-03-15T15:52:50.863Z"
+  }
+}
