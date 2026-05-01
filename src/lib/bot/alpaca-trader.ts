@@ -146,7 +146,7 @@ export async function updateAlpacaStopLoss(symbol: string, newStopPrice: number)
     const orders = await alpaca.getOrders({
       status: 'open',
       symbols: [symbol],
-    });
+    } as any);
 
     const stopOrder = orders.find((o: any) => o.type === 'stop');
     if (!stopOrder) return;
@@ -157,10 +157,9 @@ export async function updateAlpacaStopLoss(symbol: string, newStopPrice: number)
 
     // 3. Update the order
     console.log(`🆙 Updating Stop Loss for ${symbol} to $${newStopPrice.toFixed(2)}`);
-    await alpaca.replaceOrder({
-      orderId: stopOrder.id,
+    await alpaca.replaceOrder(stopOrder.id, {
       stop_price: newStopPrice.toFixed(2),
-    });
+    } as any);
   } catch (err) {
     console.error(`❌ Failed to update Stop Loss for ${symbol}:`, err);
   }
