@@ -72,7 +72,8 @@ export async function executeAlpacaBuy(
     });
 
     // 4. Notify
-    await notifyTradeExecution('buy (Real)', signal.symbol, shares, signal.price);
+    await notifyTradeExecution('buy', signal.symbol, shares, signal.price);
+
 
     return { success: true, orderId: order.id, shares };
   } catch (err) {
