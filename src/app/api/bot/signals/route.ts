@@ -17,10 +17,11 @@ export async function GET(request: Request) {
       });
     } else {
       signals = await db.query.botSignals.findMany({
-        orderBy: (s) => [desc(s.createdAt)],
+        orderBy: (s: any) => [desc(s.createdAt)],
         limit,
       });
     }
+
 
     // Parse factors JSON
     const parsed = signals.map((s: any) => ({

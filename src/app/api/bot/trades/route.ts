@@ -19,10 +19,11 @@ export async function GET(request: Request) {
       });
     } else {
       trades = await db.query.botTrades.findMany({
-        orderBy: (t) => [desc(t.entryAt)],
+        orderBy: (t: any) => [desc(t.entryAt)],
         limit,
       });
     }
+
 
     return NextResponse.json({ trades });
   } catch (err) {
