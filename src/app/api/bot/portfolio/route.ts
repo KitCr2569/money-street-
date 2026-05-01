@@ -8,20 +8,9 @@ import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    // Add timeout to prevent hanging (optimized for Mumbai database)
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database timeout')), 7000)
-    );
-
     // 1. Check Alpaca first
-    const alpacaPortfolio = await Promise.race([
-      getAlpacaPortfolioState().catch(() => null),
-      timeoutPromise
-    ]) as any;
-    const alpacaHoldings = await Promise.race([
-      getAlpacaHoldings().catch(() => []),
-      timeoutPromise
-    ]) as any;
+    const alpacaPortfolio = await getAlpacaPortfolioState().catch(() => null) as any;
+    const alpacaHoldings = await getAlpacaHoldings().catch(() => []) as any;
 
     if (alpacaPortfolio) {
       return NextResponse.json({
@@ -35,16 +24,10 @@ export async function GET() {
     }
 
     // 2. Fallback to Paper Trading (original logic)
-    const portfolio = await Promise.race([
-      getPortfolioState(),
-      timeoutPromise
-    ]);
-    const openTrades = await Promise.race([
-      db.query.botTrades.findMany({
-        where: (t: any, { eq }: any) => eq(t.status, 'open'),
-      }),
-      timeoutPromise
-    ]) as any;
+    const portfolio = await getPortfolioState() as any;
+    const openTrades = await db.query.botTrades.findMany({
+      where: (t: any, { eq }: any) => eq(t.status, 'open'),
+    }) as any;
 
     const symbols = openTrades.map((t: any) => t.symbol);
     const prices = symbols.length > 0 ? await getCurrentPrices(symbols) : new Map();

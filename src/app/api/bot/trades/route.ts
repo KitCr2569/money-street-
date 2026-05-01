@@ -6,33 +6,22 @@ import { desc, eq } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
-    // Add timeout to prevent hanging (optimized for Mumbai database)
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database timeout')), 7000)
-    );
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // 'open' | 'closed' | 'stopped' | null (all)
     const limit = parseInt(searchParams.get('limit') ?? '50');
 
     let trades;
     if (status) {
-      trades = await Promise.race([
-        db.query.botTrades.findMany({
+      trades = await db.query.botTrades.findMany({
           where: (t: any, { eq: e }: any) => e(t.status, status),
           orderBy: (t: any, { desc }: any) => [desc(t.entryAt)],
           limit,
-        }),
-        timeoutPromise
-      ]) as any;
+        });
     } else {
-      trades = await Promise.race([
-        db.query.botTrades.findMany({
+      trades = await db.query.botTrades.findMany({
           orderBy: (t: any) => [desc(t.entryAt)],
           limit,
-        }),
-        timeoutPromise
-      ]) as any;
+        });
     }
 
 
