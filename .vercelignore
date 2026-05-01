@@ -6,6 +6,13 @@ build-output.txt
 # Batch files
 *.bat
 
-# Local data
-data/
-drizzle/
+# Database and Cache (Ignore these but allow JSONs)
+data/*.db*
+data/calendar-cache/
+data/logo-cache.json
+data/news/
+data/profiles/
+data/analyses/
+data/articles/
+data/news-digests/
+
