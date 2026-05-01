@@ -9,17 +9,9 @@ export async function GET() {
   if (error) return error;
 
   try {
-    // Add timeout to prevent hanging
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database timeout')), 7000)
-    );
-
-    const settings = await Promise.race([
-      db.query.userSettings.findFirst({
-        where: eq(userSettings.id, 1),
-      }),
-      timeoutPromise
-    ]) as any;
+    const settings = await db.query.userSettings.findFirst({
+      where: eq(userSettings.id, 1),
+    }) as any;
 
     if (!settings) {
       return NextResponse.json({
@@ -63,22 +55,14 @@ export async function POST(request: NextRequest) {
   if (error) return error;
 
   try {
-    // Add timeout to prevent hanging
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database timeout')), 7000)
-    );
-
     const body = await request.json();
-    await Promise.race([
-      db
-        .insert(userSettings)
-        .values({ id: 1, ...body, updatedAt: new Date().toISOString() })
-        .onConflictDoUpdate({
-          target: userSettings.id,
-          set: { ...body, updatedAt: new Date().toISOString() },
-        }),
-      timeoutPromise
-    ]);
+    await db
+      .insert(userSettings)
+      .values({ id: 1, ...body, updatedAt: new Date().toISOString() })
+      .onConflictDoUpdate({
+        target: userSettings.id,
+        set: { ...body, updatedAt: new Date().toISOString() },
+      });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
