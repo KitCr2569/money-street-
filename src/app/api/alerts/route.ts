@@ -9,8 +9,9 @@ export async function GET() {
 
   try {
     const alerts = await db.query.priceAlerts.findMany({
-      orderBy: (t, { desc }) => [desc(t.createdAt)],
+      orderBy: (t: any, { desc }: any) => [desc(t.createdAt)],
     });
+
 
     return NextResponse.json(
       alerts.map((a) => ({
