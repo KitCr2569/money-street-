@@ -4,9 +4,9 @@ import { desc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
-    // Add timeout to prevent hanging (reduced for performance)
+    // Add timeout to prevent hanging (optimized for reliability)
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database timeout')), 3000)
+      setTimeout(() => reject(new Error('Database timeout')), 5000)
     );
 
     const { searchParams } = new URL(request.url);
