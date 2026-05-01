@@ -9,9 +9,17 @@ export async function GET() {
   if (error) return error;
 
   try {
-    const settings = await db.query.userSettings.findFirst({
-      where: eq(userSettings.id, 1),
-    });
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database timeout')), 7000)
+    );
+
+    const settings = await Promise.race([
+      db.query.userSettings.findFirst({
+        where: eq(userSettings.id, 1),
+      }),
+      timeoutPromise
+    ]) as any;
 
     if (!settings) {
       return NextResponse.json({
@@ -36,7 +44,17 @@ export async function GET() {
     });
   } catch (err) {
     console.error('Settings GET error:', err);
-    return NextResponse.json(null);
+    // Return default settings on error
+    return NextResponse.json({
+      watchlistRange: '6mo',
+      watchlistSortKey: 'change',
+      watchlistSortAsc: false,
+      watchlistFilter: 'all',
+      showTags: true,
+      homeWatchlistId: '',
+      watchlistShowAll: false,
+      error: 'Database not configured - using default settings'
+    });
   }
 }
 
@@ -45,18 +63,26 @@ export async function POST(request: NextRequest) {
   if (error) return error;
 
   try {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database timeout')), 7000)
+    );
+
     const body = await request.json();
-    await db
-      .insert(userSettings)
-      .values({ id: 1, ...body, updatedAt: new Date().toISOString() })
-      .onConflictDoUpdate({
-        target: userSettings.id,
-        set: { ...body, updatedAt: new Date().toISOString() },
-      });
+    await Promise.race([
+      db
+        .insert(userSettings)
+        .values({ id: 1, ...body, updatedAt: new Date().toISOString() })
+        .onConflictDoUpdate({
+          target: userSettings.id,
+          set: { ...body, updatedAt: new Date().toISOString() },
+        }),
+      timeoutPromise
+    ]);
 
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Settings POST error:', err);
-    return NextResponse.json({ error: 'Failed to save' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save - database timeout' }, { status: 500 });
   }
 }
