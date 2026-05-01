@@ -1,6 +1,7 @@
-# Scratch scripts
+# Scratch scripts and CLI configs
 scratch-*.ts
 bot-runner.ts
+drizzle.config.ts
 build-output.txt
 
 # Batch files
@@ -15,4 +16,6 @@ data/profiles/
 data/analyses/
 data/articles/
 data/news-digests/
+drizzle/
+
 
