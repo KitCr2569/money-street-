@@ -14,9 +14,10 @@ export async function GET() {
 
 
     return NextResponse.json(
-      alerts.map((a) => ({
+      alerts.map((a: any) => ({
         id: a.id,
         symbol: a.symbol,
+
         targetPrice: a.targetPrice,
         direction: a.direction,
         source: a.source,
