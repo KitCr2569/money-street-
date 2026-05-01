@@ -1,0 +1,11 @@
+# Scratch scripts
+scratch-*.ts
+bot-runner.ts
+build-output.txt
+
+# Batch files
+*.bat
+
+# Local data
+data/
+drizzle/
