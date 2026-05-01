@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const executedTrades = [];
     if (autoTrade) {
       const buySignals = result.signals.filter(
-        s => s.signal === 'strong_buy' || s.signal === 'buy'
+        (s: any) => s.signal === 'strong_buy' || s.signal === 'buy'
       );
 
       for (const signal of buySignals.slice(0, 3)) {
