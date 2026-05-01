@@ -45,7 +45,7 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'));
+    const files = fs.readdirSync(dir).filter((f: string) => f.endsWith('.md'));
     const items: AnalysisHistoryItem[] = [];
 
     for (const file of files) {
@@ -84,7 +84,7 @@ export async function GET(request: Request) {
       if (item) items.push(item);
     }
 
-    const filtered = filterSymbol ? items.filter((i) => i.symbol.toUpperCase() === filterSymbol) : items;
+    const filtered = filterSymbol ? items.filter((i: any) => i.symbol.toUpperCase() === filterSymbol) : items;
 
     filtered.sort((a, b) => {
       const aKey = `${a.date}_${a.time}`;

@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'FINNHUB_API_KEY not configured' }, { status: 500 });
   }
 
-  const symList = symbols.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean);
+  const symList = symbols.split(',').map((s: string) => s.trim().toUpperCase()).filter(Boolean);
+
   const cache = await readCache();
   const now = Date.now();
   const result: Record<string, string> = {};

@@ -12,11 +12,11 @@ export async function GET() {
 
     const lots = await db.query.portfolioLots.findMany();
 
-    const result = holdings.map((h) => ({
+    const result = holdings.map((h: any) => ({
       symbol: h.symbol,
       lots: lots
-        .filter((l) => l.holdingId === h.id)
-        .map((l) => ({
+        .filter((l: any) => l.holdingId === h.id)
+        .map((l: any) => ({
           id: l.id,
           shares: l.shares,
           price: l.price,

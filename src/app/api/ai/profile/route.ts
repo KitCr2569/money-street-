@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       let stderr = '';
       child.stdout.on('data', (data: Buffer) => { stdout += data.toString(); });
       child.stderr.on('data', (data: Buffer) => { stderr += data.toString(); });
-      child.on('close', (code) => {
+      child.on('close', (code: number) => {
         if (code === 0 && stdout.trim()) resolve(stdout.trim());
         else reject(new Error(stderr.trim() || stdout.trim() || `Exit code ${code}`));
       });

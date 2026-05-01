@@ -26,7 +26,7 @@ function parseFrontmatter(content: string): { meta: Record<string, unknown>; bod
     let val: unknown = line.slice(idx + 1).trim();
     // Parse array [a, b, c]
     if (typeof val === 'string' && val.startsWith('[') && val.endsWith(']')) {
-      val = val.slice(1, -1).split(',').map((s) => s.trim());
+      val = val.slice(1, -1).split(',').map((s: string) => s.trim());
     }
     meta[key] = val;
   }
@@ -38,7 +38,7 @@ function getArticles(): ArticleMeta[] {
   const dir = path.join(process.cwd(), 'data', 'articles');
   if (!fs.existsSync(dir)) return [];
 
-  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md')).sort().reverse();
+  const files = fs.readdirSync(dir).filter((f: string) => f.endsWith('.md')).sort().reverse();
   const articles: ArticleMeta[] = [];
 
   for (const file of files) {
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 
-    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'));
+    const files = fs.readdirSync(dir).filter((f: string) => f.endsWith('.md'));
     for (const file of files) {
       const content = fs.readFileSync(path.join(dir, file), 'utf-8');
       const { meta, body } = parseFrontmatter(content);

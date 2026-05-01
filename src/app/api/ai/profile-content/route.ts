@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'File not found' }, { status: 404 });
     }
     const files = fs.readdirSync(profilesDir)
-      .filter((f) => f.startsWith(`${sym}_profile_`) && f.endsWith('.md'))
+      .filter((f: string) => f.startsWith(`${sym}_profile_`) && f.endsWith('.md'))
+
       .sort()
       .reverse();
     if (files.length === 0) {

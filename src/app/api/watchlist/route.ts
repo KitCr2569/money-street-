@@ -20,19 +20,20 @@ export async function GET() {
       where: eq(userSettings.id, 1),
     });
 
-    const result = lists.map((list) => ({
+    const result = lists.map((list: any) => ({
       id: list.id,
       name: list.name,
       createdAt: list.createdAt,
       items: items
-        .filter((item) => item.listId === list.id)
-        .map((item) => ({
+        .filter((item: any) => item.listId === list.id)
+        .map((item: any) => ({
           symbol: item.symbol,
           addedAt: item.addedAt,
         })),
       pinnedSymbols: items
-        .filter((item) => item.listId === list.id && item.pinned)
-        .map((item) => item.symbol),
+        .filter((item: any) => item.listId === list.id && item.pinned)
+        .map((item: any) => item.symbol),
+
     }));
 
     return NextResponse.json({

@@ -25,9 +25,10 @@ export async function GET(request: NextRequest) {
   const symbol = request.nextUrl.searchParams.get('symbol');
 
   if (symbol) {
-    const filtered = articles.filter((a) =>
-      a.relatedSymbols.some((s) => s.toUpperCase() === symbol.toUpperCase())
+    const filtered = articles.filter((a: any) =>
+      a.relatedSymbols.some((s: string) => s.toUpperCase() === symbol.toUpperCase())
     );
+
     return NextResponse.json(filtered);
   }
 

@@ -27,7 +27,8 @@ export async function GET() {
       return NextResponse.json([]);
     }
 
-    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.md'));
+    const files = fs.readdirSync(dir).filter((f: string) => f.endsWith('.md'));
+
     const items: NewsDigestHistoryItem[] = [];
 
     for (const file of files) {

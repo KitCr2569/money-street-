@@ -39,7 +39,7 @@ function parseRssItems(xml: string): NewsArticle[] {
     const description = stripHtml(descRaw).slice(0, 300);
 
     const symbolMatches = title.match(/\(([A-Z]{1,5})\)|\$([A-Z]{1,5})/g) ?? [];
-    const relatedSymbols = symbolMatches.map((s) => s.replace(/[()$]/g, ''));
+    const relatedSymbols = symbolMatches.map((s: string) => s.replace(/[()$]/g, ''));
 
     const cleanTitle = stripHtml(title);
     items.push({ title: cleanTitle, link, pubDate, description, source, relatedSymbols, imageUrl, provider: 'yahoo', sentiment: analyzeSentiment(cleanTitle, description) });
@@ -126,9 +126,9 @@ async function fetchFinnhubNews(symbol?: string): Promise<NewsArticle[]> {
 
   const items: FinnhubNewsItem[] = await res.json();
 
-  return items.slice(0, 50).map((item) => {
+  return items.slice(0, 50).map((item: any) => {
     const relatedSymbols = item.related
-      ? item.related.split(',').map((s) => s.trim()).filter(Boolean)
+      ? item.related.split(',').map((s: string) => s.trim()).filter(Boolean)
       : [];
 
     const desc = item.summary?.slice(0, 300) ?? '';
