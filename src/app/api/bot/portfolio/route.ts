@@ -8,9 +8,9 @@ import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    // Add timeout to prevent hanging
+    // Add timeout to prevent hanging (reduced for performance)
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database timeout')), 10000)
+      setTimeout(() => reject(new Error('Database timeout')), 3000)
     );
 
     // 1. Check Alpaca first
