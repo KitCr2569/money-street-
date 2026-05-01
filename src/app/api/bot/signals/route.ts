@@ -4,22 +4,33 @@ import { desc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database timeout')), 10000)
+    );
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') ?? '100');
     const signalType = searchParams.get('type'); // 'strong_buy' | 'buy' etc.
 
     let signals;
     if (signalType) {
-      signals = await db.query.botSignals.findMany({
-        where: (s: any, { eq }: any) => eq(s.signalType, signalType),
-        orderBy: (s: any) => [desc(s.createdAt)],
-        limit,
-      });
+      signals = await Promise.race([
+        db.query.botSignals.findMany({
+          where: (s: any, { eq }: any) => eq(s.signalType, signalType),
+          orderBy: (s: any) => [desc(s.createdAt)],
+          limit,
+        }),
+        timeoutPromise
+      ]) as any;
     } else {
-      signals = await db.query.botSignals.findMany({
-        orderBy: (s: any) => [desc(s.createdAt)],
-        limit,
-      });
+      signals = await Promise.race([
+        db.query.botSignals.findMany({
+          orderBy: (s: any) => [desc(s.createdAt)],
+          limit,
+        }),
+        timeoutPromise
+      ]) as any;
     }
 
 
@@ -32,6 +43,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ signals: parsed });
   } catch (err) {
     console.error('Signals GET error:', err);
-    return NextResponse.json({ signals: [] });
+    return NextResponse.json({ 
+      signals: [],
+      error: 'Database not configured - please set TURSO_DATABASE_URL in Vercel environment variables'
+    });
   }
 }

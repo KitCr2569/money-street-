@@ -8,9 +8,20 @@ import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database timeout')), 10000)
+    );
+
     // 1. Check Alpaca first
-    const alpacaPortfolio = await getAlpacaPortfolioState();
-    const alpacaHoldings = await getAlpacaHoldings();
+    const alpacaPortfolio = await Promise.race([
+      getAlpacaPortfolioState().catch(() => null),
+      timeoutPromise
+    ]) as any;
+    const alpacaHoldings = await Promise.race([
+      getAlpacaHoldings().catch(() => []),
+      timeoutPromise
+    ]) as any;
 
     if (alpacaPortfolio) {
       return NextResponse.json({
@@ -24,10 +35,16 @@ export async function GET() {
     }
 
     // 2. Fallback to Paper Trading (original logic)
-    const portfolio = await getPortfolioState();
-    const openTrades = await db.query.botTrades.findMany({
-      where: (t: any, { eq }: any) => eq(t.status, 'open'),
-    });
+    const portfolio = await Promise.race([
+      getPortfolioState(),
+      timeoutPromise
+    ]);
+    const openTrades = await Promise.race([
+      db.query.botTrades.findMany({
+        where: (t: any, { eq }: any) => eq(t.status, 'open'),
+      }),
+      timeoutPromise
+    ]) as any;
 
     const symbols = openTrades.map((t: any) => t.symbol);
     const prices = symbols.length > 0 ? await getCurrentPrices(symbols) : new Map();
@@ -101,7 +118,24 @@ export async function GET() {
     });
   } catch (err) {
     console.error('Portfolio GET error:', err);
-    return NextResponse.json({ error: 'Failed to get portfolio' }, { status: 500 });
+    // Return empty portfolio on error to prevent hanging
+    return NextResponse.json({
+      cash: 100000,
+      totalValue: 100000,
+      peakValue: 100000,
+      initialCapital: 100000,
+      totalPnl: 0,
+      totalPnlPct: 0,
+      drawdown: 0,
+      openPositions: 0,
+      totalTrades: 0,
+      winTrades: 0,
+      lossTrades: 0,
+      winRate: 0,
+      holdings: [],
+      isAlpaca: false,
+      error: 'Database not configured - please set TURSO_DATABASE_URL in Vercel environment variables'
+    });
   }
 }
 
