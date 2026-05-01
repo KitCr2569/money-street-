@@ -18,7 +18,7 @@ export async function runUnifiedBotCycle() {
   try {
     // 1. Get current settings
     const settings = await db.query.botSettings.findFirst({
-      where: (s, { eq: e }) => e(s.id, 1),
+      where: (s: any, { eq: e }: any) => e(s.id, 1),
     });
 
     if (!settings?.enabled) {
@@ -31,7 +31,7 @@ export async function runUnifiedBotCycle() {
     
     // 2.1 Monitor Local Paper Trades
     const openTrades = await db.query.botTrades.findMany({
-      where: (t, { eq: e }) => e(t.status, 'open'),
+      where: (t: any, { eq: e }: any) => e(t.status, 'open'),
     });
     let closedLocal = 0;
     if (openTrades.length > 0) {

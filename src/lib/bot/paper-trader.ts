@@ -62,7 +62,7 @@ export async function getPortfolioState(): Promise<PortfolioState> {
 
   const p = rows[0];
   const openTrades = await db.query.botTrades.findMany({
-    where: (t, { eq: e }) => e(t.status, 'open'),
+    where: (t: any, { eq: e }: any) => e(t.status, 'open'),
   });
 
   return {
@@ -89,7 +89,7 @@ export async function executeBuy(
 
   // Check if already holding this symbol
   const existing = await db.query.botTrades.findFirst({
-    where: (t, { and, eq: e }) => and(e(t.symbol, signal.symbol), e(t.status, 'open')),
+    where: (t: any, { and, eq: e }: any) => and(e(t.symbol, signal.symbol), e(t.status, 'open')),
   });
   if (existing) {
     return { success: false, reason: `Already holding ${signal.symbol}` };
@@ -153,7 +153,7 @@ export async function monitorPositions(
   config: RiskConfig = DEFAULT_RISK_CONFIG,
 ): Promise<TradeRecord[]> {
   const openTrades = await db.query.botTrades.findMany({
-    where: (t, { eq: e }) => e(t.status, 'open'),
+    where: (t: any, { eq: e }: any) => e(t.status, 'open'),
   });
 
   const closedTrades: TradeRecord[] = [];
@@ -200,7 +200,7 @@ export async function closeTrade(
   exitReason: string,
 ): Promise<TradeRecord | null> {
   const trade = await db.query.botTrades.findFirst({
-    where: (t, { eq: e }) => e(t.id, tradeId),
+    where: (t: any, { eq: e }: any) => e(t.id, tradeId),
   });
   if (!trade || trade.status !== 'open') return null;
 
@@ -221,7 +221,7 @@ export async function closeTrade(
 
   // Update portfolio
   const portfolio = await db.query.botPortfolio.findFirst({
-    where: (p, { eq: e }) => e(p.id, 1),
+    where: (p: any, { eq: e }: any) => e(p.id, 1),
   });
   if (portfolio) {
     const cashReturn = exitPrice * trade.shares;
@@ -230,7 +230,7 @@ export async function closeTrade(
     
     // Get all remaining open trades to calculate new total value
     const remainingTrades = await db.query.botTrades.findMany({
-      where: (t, { and, eq: e, ne }) => and(e(t.status, 'open'), ne(t.id, tradeId)),
+      where: (t: any, { and, eq: e, ne }: any) => and(e(t.status, 'open'), ne(t.id, tradeId)),
     });
     let remainingHoldingsValue = 0;
     for (const rt of remainingTrades) {
@@ -285,12 +285,12 @@ export async function closeTrade(
 /** Update portfolio total value including open positions */
 async function updatePortfolioValue(currentPrices: Map<string, number>) {
   const portfolio = await db.query.botPortfolio.findFirst({
-    where: (p, { eq: e }) => e(p.id, 1),
+    where: (p: any, { eq: e }: any) => e(p.id, 1),
   });
   if (!portfolio) return;
 
   const openTrades = await db.query.botTrades.findMany({
-    where: (t, { eq: e }) => e(t.status, 'open'),
+    where: (t: any, { eq: e }: any) => e(t.status, 'open'),
   });
 
   let holdingsValue = 0;

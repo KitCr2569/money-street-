@@ -40,7 +40,7 @@ const DEFAULT_SYMBOLS = [
 export async function getScanSymbols(): Promise<string[]> {
   try {
     const settings = await db.query.botSettings.findFirst({
-      where: (s, { eq }) => eq(s.id, 1),
+      where: (s: any, { eq }: any) => eq(s.id, 1),
     });
     if (settings?.scanSymbols) {
       const parsed = JSON.parse(settings.scanSymbols) as string[];
@@ -151,7 +151,7 @@ export async function scanStocks(
     // Update last scan time
     try {
       const existing = await db.query.botSettings.findFirst({
-        where: (s, { eq }) => eq(s.id, 1),
+        where: (s: any, { eq }: any) => eq(s.id, 1),
       });
       if (existing) {
         await db.update(botSettings)
