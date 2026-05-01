@@ -106,7 +106,7 @@ export async function scanStocks(
           return generateSignal(symbol, analysis);
         })();
 
-        return await Promise.race([analysisPromise, timeoutPromise]);
+        return await Promise.race([analysisPromise, timeoutPromise]) as BotSignal | null;
       } catch (err) {
         errors.push(`${symbol}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         return null;
