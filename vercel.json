@@ -1,8 +1,13 @@
 {
   "crons": [
     {
+      "path": "/api/bot/cron",
+      "schedule": "0 * * * *"
+    },
+    {
       "path": "/api/cron/calendar",
       "schedule": "0 6,18 * * *"
     }
   ]
 }
+

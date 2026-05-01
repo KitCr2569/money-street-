@@ -1,25 +1,54 @@
 import { NextResponse } from 'next/server';
 import { getPortfolioState, resetPortfolio } from '@/lib/bot/paper-trader';
+import { getAlpacaPortfolioState, getAlpacaHoldings } from '@/lib/bot/alpaca-trader';
 import { getCurrentPrices } from '@/lib/bot/scanner';
 import { db } from '@/db';
+import { botPortfolio } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
-    const portfolio = await getPortfolioState();
+    // 1. Check Alpaca first
+    const alpacaPortfolio = await getAlpacaPortfolioState();
+    const alpacaHoldings = await getAlpacaHoldings();
 
-    // Get open trades for current holdings
+    if (alpacaPortfolio) {
+      return NextResponse.json({
+        ...alpacaPortfolio,
+        drawdown: 0, // Alpaca account doesn't give this directly in this call
+        openPositions: alpacaHoldings.length,
+        winRate: 0, // Would need order history to calculate
+        holdings: alpacaHoldings,
+        isAlpaca: true,
+      });
+    }
+
+    // 2. Fallback to Paper Trading (original logic)
+    const portfolio = await getPortfolioState();
     const openTrades = await db.query.botTrades.findMany({
       where: (t, { eq }) => eq(t.status, 'open'),
     });
 
-    // Get current prices for open positions
     const symbols = openTrades.map(t => t.symbol);
     const prices = symbols.length > 0 ? await getCurrentPrices(symbols) : new Map();
 
+    let totalUnrealizedPnl = 0;
+    let totalHoldingsValue = 0;
     const holdings = openTrades.map(t => {
       const currentPrice = prices.get(t.symbol) ?? t.entryPrice;
-      const unrealizedPnl = (currentPrice - t.entryPrice) * t.shares;
-      const unrealizedPnlPct = ((currentPrice - t.entryPrice) / t.entryPrice) * 100;
+      const isBuy = t.side === 'buy';
+      
+      const unrealizedPnl = isBuy 
+        ? (currentPrice - t.entryPrice) * t.shares
+        : (t.entryPrice - currentPrice) * t.shares;
+        
+      const unrealizedPnlPct = isBuy
+        ? ((currentPrice - t.entryPrice) / t.entryPrice) * 100
+        : ((t.entryPrice - currentPrice) / t.entryPrice) * 100;
+        
+      totalUnrealizedPnl += unrealizedPnl;
+      totalHoldingsValue += currentPrice * t.shares;
+
       return {
         ...t,
         currentPrice,
@@ -28,23 +57,34 @@ export async function GET() {
       };
     });
 
-    // Get portfolio DB record for win/loss stats
     const portfolioRecord = await db.query.botPortfolio.findFirst({
       where: (p, { eq }) => eq(p.id, 1),
     });
+
+    if (!portfolioRecord) throw new Error('Portfolio not found');
+
+    const liveTotalValue = Math.round((portfolioRecord.cash + totalHoldingsValue) * 100) / 100;
+    const finalTotalPnl = portfolioRecord.totalPnl + totalUnrealizedPnl;
+    const newPeakValue = Math.max(portfolioRecord.peakValue, liveTotalValue);
+
+    await db.update(botPortfolio).set({
+      totalValue: liveTotalValue,
+      peakValue: newPeakValue,
+      updatedAt: new Date().toISOString(),
+    }).where(eq(botPortfolio.id, 1));
 
     const winRate = portfolioRecord && portfolioRecord.totalTrades > 0
       ? (portfolioRecord.winTrades / portfolioRecord.totalTrades) * 100
       : 0;
 
     return NextResponse.json({
-      cash: portfolio.cash,
-      totalValue: portfolio.totalValue,
-      peakValue: portfolio.peakValue,
+      cash: portfolioRecord.cash,
+      totalValue: liveTotalValue,
+      peakValue: newPeakValue,
       initialCapital: portfolioRecord?.initialCapital ?? 100000,
-      totalPnl: portfolio.totalPnl,
+      totalPnl: Math.round(finalTotalPnl * 100) / 100,
       totalPnlPct: portfolioRecord?.initialCapital
-        ? ((portfolio.totalPnl) / portfolioRecord.initialCapital) * 100
+        ? (finalTotalPnl / portfolioRecord.initialCapital) * 100
         : 0,
       drawdown: portfolio.currentDrawdown * 100,
       openPositions: portfolio.openPositions,
@@ -53,6 +93,7 @@ export async function GET() {
       lossTrades: portfolioRecord?.lossTrades ?? 0,
       winRate: Math.round(winRate * 100) / 100,
       holdings,
+      isAlpaca: false,
     });
   } catch (err) {
     console.error('Portfolio GET error:', err);

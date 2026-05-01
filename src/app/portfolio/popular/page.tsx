@@ -157,10 +157,10 @@ export default function PopularPortfolioPage() {
 
       {/* Capital input */}
       <div className="bg-surface border border-border rounded-xl p-5">
-        <label className="text-sm font-semibold text-foreground block mb-2">เงินลงทุนของฉัน (บาท)</label>
+        <label className="text-sm font-semibold text-foreground block mb-2">เงินลงทุนของฉัน (USD)</label>
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-xs">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dim text-sm">฿</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dim text-sm">$</span>
             <input
               type="text"
               value={capital}
@@ -224,7 +224,7 @@ export default function PopularPortfolioPage() {
               <span className="text-2xl">{template.icon}</span>
               <div>
                 <h2 className="text-[15px] font-semibold">{template.name}</h2>
-                <p className="text-[12px] text-dim">ทุน ฿{capitalNum.toLocaleString()} — แบ่งตามสัดส่วน</p>
+                <p className="text-[12px] text-dim">ทุน ${capitalNum.toLocaleString()} — แบ่งตามสัดส่วน</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -263,7 +263,7 @@ export default function PopularPortfolioPage() {
                       </td>
                       <td className="text-right px-5 py-2.5 font-mono">{s.pct}%</td>
                       <td className="text-right px-5 py-2.5 font-mono text-green">
-                        ฿{amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        ${amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </td>
                     </tr>
                   );
@@ -272,7 +272,7 @@ export default function PopularPortfolioPage() {
                   <td className="px-5 py-2.5">รวม</td>
                   <td className="text-right px-5 py-2.5 font-mono">100%</td>
                   <td className="text-right px-5 py-2.5 font-mono text-green">
-                    ฿{capitalNum.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    ${capitalNum.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                   </td>
                 </tr>
               </tbody>

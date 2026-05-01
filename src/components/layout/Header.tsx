@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { href: '/news', label: 'ข่าวหุ้น', icon: '📰' },
   { href: '/calendar', label: 'ปฏิทิน', icon: '📅' },
   { href: '/bot', label: 'Bot เทรด', icon: '🤖', highlight: true },
+  { href: '/bot/trends', label: 'Market Trends', icon: '📈', highlight: true },
   { href: '/portfolio', label: 'พอร์ตของฉัน', icon: '💼', highlight: true },
   { href: '/guide', label: 'คู่มือ', icon: '📖' },
 ];

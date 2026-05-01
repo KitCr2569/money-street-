@@ -180,10 +180,10 @@ export async function scanStocks(
 }
 
 /**
- * Quick scan — only returns strong signals (score ≥ 2.5 or ≤ -2.5)
+ * Quick scan — returns buy/sell signals (score ≥ 1.5 or ≤ -1.5)
  */
 export async function quickScan(symbols?: string[]): Promise<ScanResult> {
-  return scanStocks(symbols, { minScore: 2.5 });
+  return scanStocks(symbols, { minScore: 1.5 });
 }
 
 /**

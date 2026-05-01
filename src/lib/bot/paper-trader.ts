@@ -6,6 +6,7 @@ import {
   calculatePositionSize, checkExitConditions, calculateTrailingStop,
   type RiskConfig, type PortfolioState, DEFAULT_RISK_CONFIG,
 } from './risk-manager';
+import { notifyTradeExecution, notifyTradeClosed } from './notifications';
 
 // =====================================================
 // Paper Trader — Simulated Trading Engine
@@ -140,6 +141,9 @@ export async function executeBuy(
     exitAt: null,
   };
 
+  // Notify
+  notifyTradeExecution('buy', signal.symbol, sizing.shares, signal.price).catch(() => {});
+
   return { success: true, trade };
 }
 
@@ -223,14 +227,36 @@ export async function closeTrade(
     const cashReturn = exitPrice * trade.shares;
     const newCash = portfolio.cash + cashReturn;
     const newTotalPnl = portfolio.totalPnl + pnl;
+    
+    // Get all remaining open trades to calculate new total value
+    const remainingTrades = await db.query.botTrades.findMany({
+      where: (t, { and, eq: e, ne }) => and(e(t.status, 'open'), ne(t.id, tradeId)),
+    });
+    let remainingHoldingsValue = 0;
+    for (const rt of remainingTrades) {
+      remainingHoldingsValue += rt.entryPrice * rt.shares; // approximation using entry price
+    }
+    const newTotalValue = Math.round((newCash + remainingHoldingsValue) * 100) / 100;
+    const newPeakValue = Math.max(portfolio.peakValue, newTotalValue);
+
     await db.update(botPortfolio).set({
       cash: newCash,
+      totalValue: newTotalValue,
+      peakValue: newPeakValue,
       totalPnl: Math.round(newTotalPnl * 100) / 100,
       totalTrades: portfolio.totalTrades + 1,
       winTrades: portfolio.winTrades + (isWin ? 1 : 0),
-      lossTrades: portfolio.lossTrades + (isWin ? 0 : 1),
+      lossTrades: portfolio.winTrades + (isWin ? 0 : 1),
       updatedAt: now,
     }).where(eq(botPortfolio.id, 1));
+
+    // Notify
+    notifyTradeClosed(
+      trade.symbol,
+      Math.round(pnl * 100) / 100,
+      Math.round(pnlPercent * 100) / 100,
+      exitReason
+    ).catch(() => {});
   }
 
   return {

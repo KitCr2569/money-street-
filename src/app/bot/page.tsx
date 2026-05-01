@@ -83,6 +83,8 @@ export default function BotDashboard() {
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [resetMode, setResetMode] = useState(false);
+  const [resetAmount, setResetAmount] = useState('5000');
 
   const fetchData = useCallback(async () => {
     try {
@@ -107,7 +109,7 @@ export default function BotDashboard() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 30000); // refresh every 30s
+    const interval = setInterval(fetchData, 5000); // refresh every 5s
     return () => clearInterval(interval);
   }, [fetchData]);
 
@@ -132,14 +134,20 @@ export default function BotDashboard() {
     }
   };
 
-  const resetPortfolio = async () => {
-    if (!confirm('⚠️ รีเซ็ตพอร์ตจำลอง? ข้อมูลเทรดทั้งหมดจะถูกลบ')) return;
+  const confirmReset = async () => {
+    const amount = Number(resetAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('จำนวนเงินไม่ถูกต้อง');
+      return;
+    }
+    
     try {
       await fetch('/api/bot/portfolio', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initialCapital: 100000 }),
+        body: JSON.stringify({ initialCapital: amount }),
       });
+      setResetMode(false);
       await fetchData();
     } catch { /* ignore */ }
   };
@@ -163,7 +171,7 @@ export default function BotDashboard() {
           <h1 className="text-xl font-bold flex items-center gap-2">
             🤖 Trading Bot <span className="text-xs font-normal text-dim bg-surface-2 px-2 py-0.5 rounded-full">Paper Trading</span>
           </h1>
-          <p className="text-xs text-dim mt-0.5">ระบบเทรดอัตโนมัติ — หุ้น + คริปโต</p>
+          <p className="text-xs text-dim mt-0.5">ระบบเทรดอัตโนมัติ — หุ้น + คริปโต + ทองคำ Gold</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -351,10 +359,28 @@ export default function BotDashboard() {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-2">
-        <button onClick={resetPortfolio} className="text-[10px] text-dim hover:text-red transition-colors">
-          🗑 รีเซ็ตพอร์ตจำลอง
-        </button>
+      <div className="flex flex-col gap-2 pt-2">
+        {!resetMode ? (
+          <button onClick={() => setResetMode(true)} className="text-[10px] text-dim hover:text-red transition-colors self-start">
+            🗑 รีเซ็ตพอร์ตจำลอง (เปลี่ยนเงินลงทุน)
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 p-2 bg-surface-2/50 rounded-lg border border-red/20 inline-flex w-fit">
+            <span className="text-xs text-dim">เริ่มต้นใหม่ด้วยเงิน: $</span>
+            <input 
+              type="number" 
+              value={resetAmount} 
+              onChange={e => setResetAmount(e.target.value)} 
+              className="bg-surface-1 border border-border rounded px-2 py-1 text-xs w-24 focus:outline-none focus:border-accent"
+            />
+            <button onClick={confirmReset} className="px-3 py-1 text-xs font-medium bg-red/15 text-red rounded hover:bg-red/25 transition-colors">
+              ยืนยันล้างพอร์ต
+            </button>
+            <button onClick={() => setResetMode(false)} className="px-3 py-1 text-xs text-dim hover:text-foreground transition-colors">
+              ยกเลิก
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

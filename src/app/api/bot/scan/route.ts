@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { scanStocks, quickScan, getCurrentPrices } from '@/lib/bot/scanner';
 import { executeBuy, monitorPositions, getPortfolioState } from '@/lib/bot/paper-trader';
 import { confirmSignalWithAI } from '@/lib/bot/ai-confirm';
-import { notifyScanResults, notifyTradeExecution } from '@/lib/bot/notifications';
+import { notifyScanResults } from '@/lib/bot/notifications';
 import { db } from '@/db';
 import { botSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -44,7 +44,6 @@ export async function POST(request: Request) {
           const trade = await executeBuy(signal);
           if (trade.success) {
             executedTrades.push(trade.trade);
-            notifyTradeExecution('buy', signal.symbol, trade.trade!.shares, signal.price).catch(() => {});
           }
         }
       }
