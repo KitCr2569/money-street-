@@ -9,14 +9,22 @@ import { eq } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Scan timeout')), 15000)
+    );
+
     const body = await request.json().catch(() => ({}));
     const { symbols, autoTrade = false } = body as {
       symbols?: string[];
       autoTrade?: boolean;
     };
 
-    // Run scan
-    const result = await scanStocks(symbols);
+    // Run scan with timeout
+    const result = await Promise.race([
+      scanStocks(symbols),
+      timeoutPromise
+    ]) as any;
 
     // Send LINE notifications for strong signals
     notifyScanResults(result).catch(err => console.error('Notify error:', err));
@@ -75,7 +83,15 @@ export async function POST(request: Request) {
 export async function GET() {
   // Quick scan — strong signals only
   try {
-    const result = await quickScan();
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Quick scan timeout')), 10000)
+    );
+
+    const result = await Promise.race([
+      quickScan(),
+      timeoutPromise
+    ]) as any;
     return NextResponse.json(result);
   } catch (err) {
     console.error('Quick scan error:', err);

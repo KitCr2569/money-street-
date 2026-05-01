@@ -86,21 +86,27 @@ export async function scanStocks(
 
     const batchPromises = batch.map(async (symbol) => {
       try {
-        // Get 6 months of history for analysis
-        const candles = await getHistory(symbol, '6mo');
-        if (candles.length < 50) {
-          errors.push(`${symbol}: Not enough data (${candles.length} candles)`);
-          return null;
-        }
+        // Add timeout for each symbol analysis
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Symbol analysis timeout')), 8000)
+        );
 
-        const analysis = analyzeStock(candles);
-        if (!analysis) {
-          errors.push(`${symbol}: Analysis failed`);
-          return null;
-        }
+        const analysisPromise = (async () => {
+          // Get 6 months of history for analysis
+          const candles = await getHistory(symbol, '6mo');
+          if (candles.length < 50) {
+            throw new Error(`Not enough data (${candles.length} candles)`);
+          }
 
-        const signal = generateSignal(symbol, analysis);
-        return signal;
+          const analysis = analyzeStock(candles);
+          if (!analysis) {
+            throw new Error('Analysis failed');
+          }
+
+          return generateSignal(symbol, analysis);
+        })();
+
+        return await Promise.race([analysisPromise, timeoutPromise]);
       } catch (err) {
         errors.push(`${symbol}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         return null;
@@ -130,21 +136,30 @@ export async function scanStocks(
   if (saveSignals) {
     for (const signal of filteredSignals) {
       try {
-        await db.insert(botSignals).values({
-          symbol: signal.symbol,
-          signalType: signal.signal,
-          totalScore: signal.totalScore,
-          normalizedScore: signal.normalizedScore,
-          strategy: signal.strategy,
-          confidence: signal.confidence,
-          price: signal.price,
-          stopLoss: signal.stopLoss,
-          takeProfit1: signal.takeProfit1,
-          factors: JSON.stringify(signal.factors),
-          executed: false,
-        });
+        // Add timeout for database operations
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database save timeout')), 3000)
+        );
+
+        await Promise.race([
+          db.insert(botSignals).values({
+            symbol: signal.symbol,
+            signalType: signal.signal,
+            totalScore: signal.totalScore,
+            normalizedScore: signal.normalizedScore,
+            strategy: signal.strategy,
+            confidence: signal.confidence,
+            price: signal.price,
+            stopLoss: signal.stopLoss,
+            takeProfit1: signal.takeProfit1,
+            factors: JSON.stringify(signal.factors),
+            executed: false,
+          }),
+          timeoutPromise
+        ]);
       } catch (err) {
         console.error(`Failed to save signal for ${signal.symbol}:`, err);
+        errors.push(`DB: ${signal.symbol}: ${err instanceof Error ? err.message : 'Save failed'}`);
       }
     }
 
