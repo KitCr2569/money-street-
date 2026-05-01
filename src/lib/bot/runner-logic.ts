@@ -35,7 +35,7 @@ export async function runUnifiedBotCycle() {
     });
     let closedLocal = 0;
     if (openTrades.length > 0) {
-      const symbols = openTrades.map(t => t.symbol);
+      const symbols = openTrades.map((t: any) => t.symbol);
       const prices = await getCurrentPrices(symbols);
       const closed = await monitorPositions(prices);
       closedLocal = closed.length;
