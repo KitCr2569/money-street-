@@ -86,10 +86,12 @@ export async function scanStocks(
 
     const batchPromises = batch.map(async (symbol) => {
       try {
-        // Add timeout for each symbol analysis
+        // Add timeout for each symbol analysis (reduced for faster response)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Symbol analysis timeout')), 8000)
+          setTimeout(() => reject(new Error('Symbol analysis timeout')), 4000)
         );
+        
+        console.log(`Starting analysis for ${symbol}...`);
 
         const analysisPromise = (async () => {
           // Get 6 months of history for analysis
@@ -106,7 +108,9 @@ export async function scanStocks(
           return generateSignal(symbol, analysis);
         })();
 
-        return await Promise.race([analysisPromise, timeoutPromise]) as BotSignal | null;
+        const result = await Promise.race([analysisPromise, timeoutPromise]) as BotSignal | null;
+        console.log(`Analysis for ${symbol} completed:`, result ? `Signal: ${result.signal}` : 'Failed');
+        return result;
       } catch (err) {
         errors.push(`${symbol}: ${err instanceof Error ? err.message : 'Unknown error'}`);
         return null;
@@ -134,12 +138,15 @@ export async function scanStocks(
 
   // Save signals to database
   if (saveSignals) {
+    console.log(`Saving ${filteredSignals.length} signals to database...`);
     for (const signal of filteredSignals) {
       try {
-        // Add timeout for database operations
+        // Add timeout for database operations (reduced)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Database save timeout')), 3000)
+          setTimeout(() => reject(new Error('Database save timeout')), 2000)
         );
+        
+        console.log(`Saving signal for ${signal.symbol}...`);
 
         await Promise.race([
           db.insert(botSignals).values({
@@ -157,6 +164,7 @@ export async function scanStocks(
           }),
           timeoutPromise
         ]);
+        console.log(`Successfully saved signal for ${signal.symbol}`);
       } catch (err) {
         console.error(`Failed to save signal for ${signal.symbol}:`, err);
         errors.push(`DB: ${signal.symbol}: ${err instanceof Error ? err.message : 'Save failed'}`);
@@ -182,6 +190,11 @@ export async function scanStocks(
   const sellSignals = filteredSignals.filter(s =>
     s.signal === 'strong_sell' || s.signal === 'sell'
   ).length;
+
+  console.log(`Scan completed: ${signals.length} total, ${filteredSignals.length} filtered, ${buySignals} buy, ${sellSignals} sell`);
+  if (errors.length > 0) {
+    console.log('Errors:', errors);
+  }
 
   return {
     signals: filteredSignals,
