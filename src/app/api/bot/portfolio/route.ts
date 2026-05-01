@@ -107,8 +107,8 @@ export async function GET() {
       totalPnlPct: portfolioRecord?.initialCapital
         ? (finalTotalPnl / portfolioRecord.initialCapital) * 100
         : 0,
-      drawdown: portfolio.currentDrawdown * 100,
-      openPositions: portfolio.openPositions,
+      drawdown: (portfolio as any).currentDrawdown * 100,
+      openPositions: (portfolio as any).openPositions,
       totalTrades: portfolioRecord?.totalTrades ?? 0,
       winTrades: portfolioRecord?.winTrades ?? 0,
       lossTrades: portfolioRecord?.lossTrades ?? 0,
