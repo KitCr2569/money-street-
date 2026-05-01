@@ -7,15 +7,16 @@ let instance: any | null = null;
 export async function getDB() {
   if (instance) return instance;
 
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
+  // Use local database for better performance
+  // const url = process.env.TURSO_DATABASE_URL;
+  // const authToken = process.env.TURSO_AUTH_TOKEN;
 
-  if (url && url.startsWith('libsql://')) {
-    const { createClient } = await import('@libsql/client');
-    const { drizzle: drizzleLibsql } = await import('drizzle-orm/libsql');
-    const client = createClient({ url, authToken });
-    instance = drizzleLibsql(client, { schema });
-  } else {
+  // if (url && url.startsWith('libsql://')) {
+  //   const { createClient } = await import('@libsql/client');
+  //   const { drizzle: drizzleLibsql } = await import('drizzle-orm/libsql');
+  //   const client = createClient({ url, authToken });
+  //   instance = drizzleLibsql(client, { schema });
+  // } else {
     const Database = (await import('better-sqlite3')).default;
     const { drizzle } = await import('drizzle-orm/better-sqlite3');
     
@@ -28,7 +29,7 @@ export async function getDB() {
     sqlite.pragma('foreign_keys = ON');
 
     instance = drizzle(sqlite, { schema });
-  }
+  // }
   return instance;
 }
 
