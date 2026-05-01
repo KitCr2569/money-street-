@@ -32,7 +32,7 @@ export async function POST(request: Request) {
         // AI confirmation check
         let aiOk = true;
         const settings = await db.query.botSettings.findFirst({
-          where: (s, { eq: e }) => e(s.id, 1),
+          where: (s: any, { eq: e }: any) => e(s.id, 1),
         });
         if (settings?.useAiConfirm) {
           const aiResult = await confirmSignalWithAI(signal);
@@ -50,8 +50,8 @@ export async function POST(request: Request) {
 
       // Also monitor existing positions
       const openSymbols = (await db.query.botTrades.findMany({
-        where: (t, { eq: e }) => e(t.status, 'open'),
-      })).map(t => t.symbol);
+        where: (t: any, { eq: e }: any) => e(t.status, 'open'),
+      })).map((t: any) => t.symbol);
 
       if (openSymbols.length > 0) {
         const prices = await getCurrentPrices(openSymbols);

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     const results = await Promise.all(
-      keywords.map(k => discoverSymbolsFromTrend(k))
+      keywords.map((k: string) => discoverSymbolsFromTrend(k))
     );
 
     return NextResponse.json({ results });

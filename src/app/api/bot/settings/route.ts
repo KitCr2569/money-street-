@@ -6,13 +6,13 @@ import { eq } from 'drizzle-orm';
 export async function GET() {
   try {
     let settings = await db.query.botSettings.findFirst({
-      where: (s, { eq: e }) => e(s.id, 1),
+      where: (s: any, { eq: e }: any) => e(s.id, 1),
     });
 
     if (!settings) {
       await db.insert(botSettings).values({ id: 1 });
       settings = await db.query.botSettings.findFirst({
-        where: (s, { eq: e }) => e(s.id, 1),
+        where: (s: any, { eq: e }: any) => e(s.id, 1),
       });
     }
 
@@ -49,10 +49,10 @@ export async function PUT(request: Request) {
     if (useAiConfirm !== undefined) updates.useAiConfirm = useAiConfirm;
 
     // Ensure row exists
-    const existing = await db.query.botSettings.findFirst({
-      where: (s, { eq: e }) => e(s.id, 1),
+    const currentSettings = await db.query.botSettings.findFirst({
+      where: (s: any, { eq: e }: any) => e(s.id, 1),
     });
-    if (!existing) {
+    if (!currentSettings) {
       await db.insert(botSettings).values({ id: 1, ...updates } as typeof botSettings.$inferInsert);
     } else {
       await db.update(botSettings).set(updates).where(eq(botSettings.id, 1));

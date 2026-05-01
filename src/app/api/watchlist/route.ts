@@ -10,7 +10,7 @@ export async function GET() {
 
   try {
     const lists = await db.query.watchlistLists.findMany({
-      orderBy: (t, { asc }) => [asc(t.createdAt)],
+      orderBy: (t: any, { asc }: any) => [asc(t.createdAt)],
     });
 
     const items = await db.query.watchlistItems.findMany();

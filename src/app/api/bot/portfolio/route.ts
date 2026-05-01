@@ -26,15 +26,15 @@ export async function GET() {
     // 2. Fallback to Paper Trading (original logic)
     const portfolio = await getPortfolioState();
     const openTrades = await db.query.botTrades.findMany({
-      where: (t, { eq }) => eq(t.status, 'open'),
+      where: (t: any, { eq }: any) => eq(t.status, 'open'),
     });
 
-    const symbols = openTrades.map(t => t.symbol);
+    const symbols = openTrades.map((t: any) => t.symbol);
     const prices = symbols.length > 0 ? await getCurrentPrices(symbols) : new Map();
 
     let totalUnrealizedPnl = 0;
     let totalHoldingsValue = 0;
-    const holdings = openTrades.map(t => {
+    const holdings = openTrades.map((t: any) => {
       const currentPrice = prices.get(t.symbol) ?? t.entryPrice;
       const isBuy = t.side === 'buy';
       
@@ -57,8 +57,12 @@ export async function GET() {
       };
     });
 
+    const performance = await db.query.botSettings.findFirst({
+      where: (p: any, { eq }: any) => eq(p.id, 1),
+    });
+
     const portfolioRecord = await db.query.botPortfolio.findFirst({
-      where: (p, { eq }) => eq(p.id, 1),
+      where: (p: any, { eq }: any) => eq(p.id, 1),
     });
 
     if (!portfolioRecord) throw new Error('Portfolio not found');

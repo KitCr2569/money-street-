@@ -13,8 +13,8 @@ export async function GET(request: Request) {
     let trades;
     if (status) {
       trades = await db.query.botTrades.findMany({
-        where: (t, { eq: e }) => e(t.status, status),
-        orderBy: (t) => [desc(t.entryAt)],
+        where: (t: any, { eq: e }: any) => e(t.status, status),
+        orderBy: (t: any, { desc }: any) => [desc(t.entryAt)],
         limit,
       });
     } else {

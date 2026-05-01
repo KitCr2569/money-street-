@@ -11,8 +11,8 @@ export async function GET(request: Request) {
     let signals;
     if (signalType) {
       signals = await db.query.botSignals.findMany({
-        where: (s, { eq }) => eq(s.signalType, signalType),
-        orderBy: (s) => [desc(s.createdAt)],
+        where: (s: any, { eq }: any) => eq(s.signalType, signalType),
+        orderBy: (s: any) => [desc(s.createdAt)],
         limit,
       });
     } else {
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     }
 
     // Parse factors JSON
-    const parsed = signals.map(s => ({
+    const parsed = signals.map((s: any) => ({
       ...s,
       factors: JSON.parse(s.factors),
     }));
