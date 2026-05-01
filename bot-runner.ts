@@ -15,7 +15,7 @@ async function startBot() {
     try {
       // Get current settings for interval
       const settings = await db.query.botSettings.findFirst({
-        where: (s, { eq }) => eq(s.id, 1),
+        where: (s: any, { eq }: any) => eq(s.id, 1),
       });
 
       const intervalMinutes = settings?.scanIntervalMinutes || 30;
