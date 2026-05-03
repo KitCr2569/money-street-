@@ -90,72 +90,81 @@ export async function executeBuy(
   signal: BotSignal,
   config: RiskConfig = DEFAULT_RISK_CONFIG,
 ): Promise<{ success: boolean; trade?: TradeRecord; reason?: string }> {
-  const db = await getDb();
-  const portfolio = await getPortfolioState();
-  const sizing = calculatePositionSize(signal, portfolio, config);
+  try {
+    const db = await getDb();
+    const portfolio = await getPortfolioState();
+    const sizing = calculatePositionSize(signal, portfolio, config);
 
-  if (!sizing.approved) {
-    return { success: false, reason: sizing.rejectReason };
+    if (!sizing.approved) {
+      return { success: false, reason: sizing.rejectReason };
+    }
+
+    // Check if already holding this symbol
+    const existing = await db.query.botTrades.findFirst({
+      where: (t: any, { and, eq: e }: any) => and(e(t.symbol, signal.symbol), e(t.status, 'open')),
+    });
+    if (existing) {
+      return { success: false, reason: `Already holding ${signal.symbol}` };
+    }
+
+    // Create trade record
+    const tradeId = crypto.randomUUID();
+    console.log(`📝 Inserting trade ${tradeId} for ${signal.symbol}...`);
+    
+    await db.insert(botTrades).values({
+      id: tradeId,
+      symbol: signal.symbol,
+      side: 'buy',
+      shares: sizing.shares,
+      entryPrice: signal.price,
+      stopLoss: signal.stopLoss,
+      takeProfit1: signal.takeProfit1,
+      takeProfit2: signal.takeProfit2,
+      highestPrice: signal.price,
+      strategy: signal.strategy,
+      signalScore: signal.totalScore,
+      confidence: signal.confidence,
+      status: 'open',
+    });
+    console.log(`✅ Trade ${tradeId} inserted successfully`);
+
+    // Update portfolio cash
+    const newCash = portfolio.cash - sizing.investmentAmount;
+    await db.update(botPortfolio)
+      .set({ cash: newCash, updatedAt: new Date().toISOString() })
+      .where(eq(botPortfolio.id, 1));
+    console.log(`💰 Portfolio updated: cash = ${newCash}`);
+
+    const trade: TradeRecord = {
+      id: tradeId,
+      symbol: signal.symbol,
+      side: 'buy',
+      shares: sizing.shares,
+      entryPrice: signal.price,
+      exitPrice: null,
+      stopLoss: signal.stopLoss,
+      takeProfit1: signal.takeProfit1,
+      takeProfit2: signal.takeProfit2,
+      highestPrice: signal.price,
+      strategy: signal.strategy,
+      signalScore: signal.totalScore,
+      confidence: signal.confidence,
+      status: 'open',
+      exitReason: null,
+      pnl: null,
+      pnlPercent: null,
+      entryAt: new Date().toISOString(),
+      exitAt: null,
+    };
+
+    // Notify
+    notifyTradeExecution('buy', signal.symbol, sizing.shares, signal.price).catch(() => {});
+
+    return { success: true, trade };
+  } catch (error) {
+    console.error(`❌ executeBuy error for ${signal.symbol}:`, error);
+    return { success: false, reason: error instanceof Error ? error.message : 'Database error' };
   }
-
-  // Check if already holding this symbol
-  const existing = await db.query.botTrades.findFirst({
-    where: (t: any, { and, eq: e }: any) => and(e(t.symbol, signal.symbol), e(t.status, 'open')),
-  });
-  if (existing) {
-    return { success: false, reason: `Already holding ${signal.symbol}` };
-  }
-
-  // Create trade record
-  const tradeId = crypto.randomUUID();
-  await db.insert(botTrades).values({
-    id: tradeId,
-    symbol: signal.symbol,
-    side: 'buy',
-    shares: sizing.shares,
-    entryPrice: signal.price,
-    stopLoss: signal.stopLoss,
-    takeProfit1: signal.takeProfit1,
-    takeProfit2: signal.takeProfit2,
-    highestPrice: signal.price,
-    strategy: signal.strategy,
-    signalScore: signal.totalScore,
-    confidence: signal.confidence,
-    status: 'open',
-  });
-
-  // Update portfolio cash
-  const newCash = portfolio.cash - sizing.investmentAmount;
-  await db.update(botPortfolio)
-    .set({ cash: newCash, updatedAt: new Date().toISOString() })
-    .where(eq(botPortfolio.id, 1));
-
-  const trade: TradeRecord = {
-    id: tradeId,
-    symbol: signal.symbol,
-    side: 'buy',
-    shares: sizing.shares,
-    entryPrice: signal.price,
-    exitPrice: null,
-    stopLoss: signal.stopLoss,
-    takeProfit1: signal.takeProfit1,
-    takeProfit2: signal.takeProfit2,
-    highestPrice: signal.price,
-    strategy: signal.strategy,
-    signalScore: signal.totalScore,
-    confidence: signal.confidence,
-    status: 'open',
-    exitReason: null,
-    pnl: null,
-    pnlPercent: null,
-    entryAt: new Date().toISOString(),
-    exitAt: null,
-  };
-
-  // Notify
-  notifyTradeExecution('buy', signal.symbol, sizing.shares, signal.price).catch(() => {});
-
-  return { success: true, trade };
 }
 
 /** Check and close positions that hit SL/TP */
