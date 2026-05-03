@@ -3,7 +3,7 @@ import { scanStocks, quickScan, getCurrentPrices } from '@/lib/bot/scanner';
 import { executeBuy, monitorPositions, getPortfolioState } from '@/lib/bot/paper-trader';
 import { confirmSignalWithAI } from '@/lib/bot/ai-confirm';
 import { notifyScanResults } from '@/lib/bot/notifications';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { botSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -50,34 +50,46 @@ export async function POST(request: Request) {
         (s: any) => s.signal === 'strong_buy' || s.signal === 'buy'
       );
 
-      for (const signal of buySignals.slice(0, 3)) {
-        // AI confirmation check
-        let aiOk = true;
+      // Get DB and settings for auto-trade
+      const db = await getDB();
+      if (!db || !db.query) {
+        console.error('Database not available for auto-trade');
+      } else {
         const settings = await db.query.botSettings.findFirst({
           where: (s: any, { eq: e }: any) => e(s.id, 1),
         });
-        if (settings?.useAiConfirm) {
-          const aiResult = await confirmSignalWithAI(signal);
-          aiOk = aiResult.confirmed;
-          if (aiResult.adjustedStopLoss) signal.stopLoss = aiResult.adjustedStopLoss;
-        }
 
-        if (aiOk) {
-          const trade = await executeBuy(signal);
-          if (trade.success) {
-            executedTrades.push(trade.trade);
+        for (const signal of buySignals.slice(0, 3)) {
+          // AI confirmation check
+          let aiOk = true;
+          if (settings?.useAiConfirm) {
+            const aiResult = await confirmSignalWithAI(signal);
+            aiOk = aiResult.confirmed;
+            if (aiResult.adjustedStopLoss) signal.stopLoss = aiResult.adjustedStopLoss;
+          }
+
+          if (aiOk) {
+            const trade = await executeBuy(signal);
+            if (trade.success) {
+              executedTrades.push(trade.trade);
+              console.log(`✅ Trade executed: ${signal.symbol}`);
+            } else {
+              console.log(`❌ Trade failed: ${signal.symbol} - ${trade.reason}`);
+            }
           }
         }
       }
 
       // Also monitor existing positions
-      const openSymbols = (await db.query.botTrades.findMany({
-        where: (t: any, { eq: e }: any) => e(t.status, 'open'),
-      })).map((t: any) => t.symbol);
+      if (db && db.query) {
+        const openSymbols = (await db.query.botTrades.findMany({
+          where: (t: any, { eq: e }: any) => e(t.status, 'open'),
+        })).map((t: any) => t.symbol);
 
-      if (openSymbols.length > 0) {
-        const prices = await getCurrentPrices(openSymbols);
-        await monitorPositions(prices);
+        if (openSymbols.length > 0) {
+          const prices = await getCurrentPrices(openSymbols);
+          await monitorPositions(prices);
+        }
       }
     }
 
