@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { botSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     let settings = await db.query.botSettings.findFirst({
       where: (s: any, { eq: e }: any) => e(s.id, 1),
     });
@@ -49,6 +54,11 @@ export async function PUT(request: Request) {
     if (useAiConfirm !== undefined) updates.useAiConfirm = useAiConfirm;
 
     // Ensure row exists
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     const currentSettings = await db.query.botSettings.findFirst({
       where: (s: any, { eq: e }: any) => e(s.id, 1),
     });
