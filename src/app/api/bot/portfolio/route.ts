@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getPortfolioState, resetPortfolio } from '@/lib/bot/paper-trader';
 import { getAlpacaPortfolioState, getAlpacaHoldings } from '@/lib/bot/alpaca-trader';
 import { getCurrentPrices } from '@/lib/bot/scanner';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { botPortfolio } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
@@ -25,6 +25,13 @@ export async function GET() {
 
     // 2. Fallback to Paper Trading (original logic)
     const portfolio = await getPortfolioState() as any;
+    
+    // Initialize DB
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     const openTrades = await db.query.botTrades.findMany({
       where: (t: any, { eq }: any) => eq(t.status, 'open'),
     }) as any;

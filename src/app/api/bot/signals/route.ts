@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { desc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
@@ -11,29 +11,25 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') ?? '100');
     const signalType = searchParams.get('type'); // 'strong_buy' | 'buy' etc.
 
-    const DB_TIMEOUT = isVercel ? 8000 : 30000; // 8s for Vercel, 30s for local
+    // Initialize DB connection
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
 
-    let signalsQuery;
+    let signals;
     if (signalType) {
-      signalsQuery = db.query.botSignals.findMany({
+      signals = await db.query.botSignals.findMany({
           where: (s: any, { eq }: any) => eq(s.signalType, signalType),
           orderBy: (s: any) => [desc(s.createdAt)],
           limit,
         });
     } else {
-      signalsQuery = db.query.botSignals.findMany({
+      signals = await db.query.botSignals.findMany({
           orderBy: (s: any) => [desc(s.createdAt)],
           limit,
         });
     }
-
-    // Add timeout for database query
-    const signals = await Promise.race([
-      signalsQuery,
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database timeout')), DB_TIMEOUT)
-      )
-    ]) as any[];
 
 
     // Parse factors JSON

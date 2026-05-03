@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { botTrades } from '@/db/schema';
 import { closeTrade } from '@/lib/bot/paper-trader';
 import { desc, eq } from 'drizzle-orm';
@@ -13,29 +13,25 @@ export async function GET(request: Request) {
     const status = searchParams.get('status'); // 'open' | 'closed' | 'stopped' | null (all)
     const limit = parseInt(searchParams.get('limit') ?? '50');
 
-    const DB_TIMEOUT = isVercel ? 8000 : 30000; // 8s for Vercel, 30s for local
+    // Initialize DB connection
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
 
-    let tradesQuery;
+    let trades;
     if (status) {
-      tradesQuery = db.query.botTrades.findMany({
+      trades = await db.query.botTrades.findMany({
           where: (t: any, { eq: e }: any) => e(t.status, status),
           orderBy: (t: any, { desc }: any) => [desc(t.entryAt)],
           limit,
         });
     } else {
-      tradesQuery = db.query.botTrades.findMany({
+      trades = await db.query.botTrades.findMany({
           orderBy: (t: any) => [desc(t.entryAt)],
           limit,
         });
     }
-
-    // Add timeout for database query
-    const trades = await Promise.race([
-      tradesQuery,
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database timeout')), DB_TIMEOUT)
-      )
-    ]) as any[];
 
 
     return NextResponse.json({ trades });

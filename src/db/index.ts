@@ -2,57 +2,58 @@ import * as schema from './schema';
 import { join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 
-let instance: any | null = null;
+let dbInstance: any | null = null;
+let dbInitPromise: Promise<any> | null = null;
 
-export async function getDB() {
-  if (instance) return instance;
+/**
+ * Initialize database - works for both local (SQLite) and Vercel (Turso)
+ */
+async function initDB() {
+  if (dbInstance) return dbInstance;
+  
+  // Prevent race conditions
+  if (dbInitPromise) return dbInitPromise;
+  
+  dbInitPromise = (async () => {
+    const url = process.env.TURSO_DATABASE_URL;
+    const authToken = process.env.TURSO_AUTH_TOKEN;
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+    const forceLocal = ['1', 'true', 'yes'].includes(String(process.env.USE_LOCAL_DB ?? '').toLowerCase());
 
-  const url = process.env.TURSO_DATABASE_URL;
-  const authToken = process.env.TURSO_AUTH_TOKEN;
-  const forceLocal = ['1', 'true', 'yes'].includes(String(process.env.USE_LOCAL_DB ?? '').toLowerCase());
+    // On Vercel, MUST use Turso (SQLite file will be lost on each deploy)
+    if (isVercel && !url) {
+      console.error('❌ Vercel detected but TURSO_DATABASE_URL not set!');
+      throw new Error('TURSO_DATABASE_URL required for Vercel deployment');
+    }
 
-  if (!forceLocal && url && url.startsWith('libsql://')) {
-    const { createClient } = await import('@libsql/client');
-    const { drizzle: drizzleLibsql } = await import('drizzle-orm/libsql');
-    
-    // Add connection timeout for Turso (Vercel serverless optimization)
-    const connectTimeout = parseInt(process.env.TURSO_CONNECT_TIMEOUT ?? '5000');
-    
-    const client = createClient({ 
-      url, 
-      authToken,
-      // Connection timeout to prevent hanging in serverless
-      syncInterval: 0, // Disable sync for read-only operations in serverless
-    });
-    
-    // Test connection with timeout
-    const testConnection = Promise.race([
-      client.execute('SELECT 1'),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Turso connection timeout')), connectTimeout)
-      )
-    ]);
-    
-    try {
-      await testConnection;
-      console.log('✅ Turso connected successfully');
-    } catch (err) {
-      console.error('❌ Turso connection failed:', err);
-      // Fallback to SQLite if Turso fails
-      console.log('⚠️ Falling back to local SQLite');
-      return getLocalDB();
+    if (!forceLocal && url && url.startsWith('libsql://')) {
+      try {
+        const { createClient } = await import('@libsql/client');
+        const { drizzle: drizzleLibsql } = await import('drizzle-orm/libsql');
+        
+        const client = createClient({ url, authToken });
+        
+        // Quick connection test
+        await client.execute('SELECT 1');
+        console.log('✅ Turso connected');
+        
+        dbInstance = drizzleLibsql(client, { schema });
+        return dbInstance;
+      } catch (err) {
+        console.error('❌ Turso failed:', err);
+        if (isVercel) throw err; // On Vercel, can't fallback to SQLite
+        console.log('⚠️ Falling back to SQLite');
+      }
     }
     
-    instance = drizzleLibsql(client, { schema });
-  } else {
-    return getLocalDB();
-  }
+    // Local SQLite (or fallback when Turso not configured)
+    return initLocalDB();
+  })();
+  
+  return dbInitPromise;
 }
 
-// Separate function for local SQLite to allow fallback
-async function getLocalDB() {
-  if (instance && instance.constructor?.name?.includes('better-sqlite3')) return instance;
-  
+async function initLocalDB() {
   const Database = (await import('better-sqlite3')).default;
   const { drizzle } = await import('drizzle-orm/better-sqlite3');
   
@@ -64,78 +65,59 @@ async function getLocalDB() {
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
 
-  instance = drizzle(sqlite, { schema });
-  return instance;
+  dbInstance = drizzle(sqlite, { schema });
+  console.log('✅ SQLite connected:', dbPath);
+  return dbInstance;
 }
 
 /**
- * Creates a proxy for async DB access so chained calls like
- * db.insert(...).values(...) work correctly.
+ * Get database instance - ensures initialization before use
  */
-const wrapThenable = (value: any) => {
-  if (value && typeof value.then === 'function' && value[Symbol.toStringTag] !== 'QueryPromise') {
-    return new Proxy(value, {
-      get(target, prop, receiver) {
-        if (prop === 'then') return undefined;
-        return Reflect.get(target, prop, receiver);
-      },
-      has(target, prop) {
-        if (prop === 'then') return false;
-        return prop in target;
-      },
-      getOwnPropertyDescriptor(target, prop) {
-        if (prop === 'then') return undefined;
-        return Reflect.getOwnPropertyDescriptor(target, prop);
-      },
-      ownKeys(target) {
-        return Reflect.ownKeys(target);
-      },
-      apply(target, thisArg, args) {
-        if (process.env.DEBUG_DB_PROXY === '1') {
-          console.log('WRAP APPLY target=', target && target.constructor?.name, 'typeof=', typeof target, 'hasThen=', !!target?.then);
+export async function getDB() {
+  return initDB();
+}
+
+/**
+ * Simplified db export for Vercel serverless compatibility
+ * Each call ensures DB is initialized
+ */
+export const db = new Proxy({} as any, {
+  get(_, prop) {
+    return (...args: any[]) => {
+      return initDB().then((dbInstance) => {
+        const value = dbInstance[prop];
+        if (typeof value === 'function') {
+          return value.apply(dbInstance, args);
         }
-        if (typeof target !== 'function') {
-          throw new TypeError('Attempted to call a non-function database proxy target');
-        }
-        return wrapThenable((target as any)(...args));
-      },
-    });
+        return value;
+      });
+    };
   }
-  return value;
-};
-
-const createAsyncProxy = (promise: Promise<any>): any => new Proxy(() => {}, {
-  get(_target, prop) {
-    if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-      return (promise as any)[prop].bind(promise);
-    }
-
-    return createAsyncProxy(
-      promise.then((target) => {
-        const value = (target as any)[prop];
-        if (process.env.DEBUG_DB_PROXY === '1') {
-          console.log('DB_PROXY GET', String(prop), 'target=', target && target.constructor?.name, 'valueType=', typeof value, 'hasValue=', value !== undefined);
-        }
-        return wrapThenable(typeof value === 'function' ? value.bind(target) : value);
-      })
-    );
-  },
-  apply(_target, thisArg, args) {
-    return createAsyncProxy(
-      promise.then((target) => {
-        if (process.env.DEBUG_DB_PROXY === '1') {
-          console.log('DB_PROXY APPLY', 'target=', target && target.constructor?.name, 'typeof=', typeof target, 'args=', args.map((a) => a && a.constructor?.name));
-        }
-        if (typeof target !== 'function') {
-          throw new TypeError('Attempted to call a non-function database proxy target');
-        }
-        return wrapThenable((target as any)(...args));
-      })
-    );
-  },
 });
 
-export const db: any = createAsyncProxy(getDB());
+// Also export query helpers that work with the proxy
+export const query = {
+  async botSignals(...args: any[]) {
+    const db = await initDB();
+    return db.query.botSignals(...args);
+  },
+  async botTrades(...args: any[]) {
+    const db = await initDB();
+    return db.query.botTrades(...args);
+  },
+  async botPortfolio(...args: any[]) {
+    const db = await initDB();
+    return db.query.botPortfolio(...args);
+  },
+  async botSettings(...args: any[]) {
+    const db = await initDB();
+    return db.query.botSettings(...args);
+  },
+  async userSettings(...args: any[]) {
+    const db = await initDB();
+    return db.query.userSettings(...args);
+  },
+};
 
 
 
