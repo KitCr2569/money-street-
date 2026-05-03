@@ -58,7 +58,7 @@ export async function GET() {
     });
 
     const portfolioRecord = await db.query.botPortfolio.findFirst({
-      where: (p, { eq }) => eq(p.id, 1),
+      where: (p: any, { eq }: any) => eq(p.id, 1),
     });
 
     if (!portfolioRecord) throw new Error('Portfolio not found');

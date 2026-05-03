@@ -48,7 +48,7 @@ const queryProxy = new Proxy(() => {}, {
   }
 });
 
-export const db = new Proxy(() => {}, {
+export const db: any = new Proxy(() => {}, {
   get(target, prop) {
     if (prop === 'query') return queryProxy;
     return (...args: any[]) => getDB().then(db => (db as any)[prop](...args));
