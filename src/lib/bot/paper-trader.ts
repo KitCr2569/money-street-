@@ -1,7 +1,16 @@
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { botTrades, botPortfolio } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import type { BotSignal } from './bot-engine';
+
+// Helper to get database instance
+async function getDb() {
+  const db = await getDB();
+  if (!db || !db.query) {
+    throw new Error('Database not initialized');
+  }
+  return db;
+}
 import {
   calculatePositionSize, checkExitConditions, calculateTrailingStop,
   type RiskConfig, type PortfolioState, DEFAULT_RISK_CONFIG,
