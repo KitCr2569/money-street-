@@ -5,32 +5,48 @@ import { closeTrade } from '@/lib/bot/paper-trader';
 import { desc, eq } from 'drizzle-orm';
 
 export async function GET(request: Request) {
+  // Detect Vercel environment (outside try block for catch access)
+  const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+  
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status'); // 'open' | 'closed' | 'stopped' | null (all)
     const limit = parseInt(searchParams.get('limit') ?? '50');
 
-    let trades;
+    const DB_TIMEOUT = isVercel ? 8000 : 30000; // 8s for Vercel, 30s for local
+
+    let tradesQuery;
     if (status) {
-      trades = await db.query.botTrades.findMany({
+      tradesQuery = db.query.botTrades.findMany({
           where: (t: any, { eq: e }: any) => e(t.status, status),
           orderBy: (t: any, { desc }: any) => [desc(t.entryAt)],
           limit,
         });
     } else {
-      trades = await db.query.botTrades.findMany({
+      tradesQuery = db.query.botTrades.findMany({
           orderBy: (t: any) => [desc(t.entryAt)],
           limit,
         });
     }
 
+    // Add timeout for database query
+    const trades = await Promise.race([
+      tradesQuery,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database timeout')), DB_TIMEOUT)
+      )
+    ]) as any[];
+
 
     return NextResponse.json({ trades });
   } catch (err) {
     console.error('Bot trades GET error:', err);
+    // Return empty trades with note for graceful UI display
     return NextResponse.json({ 
       trades: [],
-      error: 'Database not configured - please set TURSO_DATABASE_URL in Vercel environment variables'
+      note: isVercel 
+        ? 'Database loading... Please wait or check TURSO_DATABASE_URL'
+        : 'Local mode: No trades yet - click "Scan + Auto Trade" to start'
     });
   }
 }
