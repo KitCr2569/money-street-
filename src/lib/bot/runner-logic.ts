@@ -4,9 +4,18 @@ import { executeAlpacaBuy, getAlpacaClient, updateAlpacaStopLoss } from './alpac
 import { notifyScanResults } from './notifications';
 import { confirmSignalWithAI } from './ai-confirm';
 import { calculatePositionSize, DEFAULT_RISK_CONFIG } from './risk-manager';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { botSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+
+// Helper to get database instance
+async function getDb() {
+  const db = await getDB();
+  if (!db || !db.query) {
+    throw new Error('Database not initialized');
+  }
+  return db;
+}
 
 /**
  * Unified Bot Cycle Logic
@@ -17,6 +26,7 @@ export async function runUnifiedBotCycle() {
 
   try {
     // 1. Get current settings
+    const db = await getDb();
     const settings = await db.query.botSettings.findFirst({
       where: (s: any, { eq: e }: any) => e(s.id, 1),
     });
@@ -163,7 +173,7 @@ export async function runUnifiedBotCycle() {
     }
 
     // 6. Update last scan time
-    await db.update(botSettings)
+    await (await getDb()).update(botSettings)
       .set({ lastScanAt: new Date().toISOString() })
       .where(eq(botSettings.id, 1));
 
