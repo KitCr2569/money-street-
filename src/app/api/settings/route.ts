@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { userSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireAuth } from '@/lib/api-auth';
@@ -9,6 +9,11 @@ export async function GET() {
   if (error) return error;
 
   try {
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     const settings = await db.query.userSettings.findFirst({
       where: eq(userSettings.id, 1),
     }) as any;
@@ -55,6 +60,11 @@ export async function POST(request: NextRequest) {
   if (error) return error;
 
   try {
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     const body = await request.json();
     await db
       .insert(userSettings)
