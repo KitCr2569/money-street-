@@ -45,6 +45,7 @@ export interface TradeRecord {
 
 /** Get or create portfolio state */
 export async function getPortfolioState(): Promise<PortfolioState> {
+  const db = await getDb();
   const rows = await db.query.botPortfolio.findMany();
   if (rows.length === 0) {
     // Initialize portfolio
@@ -89,6 +90,7 @@ export async function executeBuy(
   signal: BotSignal,
   config: RiskConfig = DEFAULT_RISK_CONFIG,
 ): Promise<{ success: boolean; trade?: TradeRecord; reason?: string }> {
+  const db = await getDb();
   const portfolio = await getPortfolioState();
   const sizing = calculatePositionSize(signal, portfolio, config);
 
@@ -161,6 +163,7 @@ export async function monitorPositions(
   currentPrices: Map<string, number>,
   config: RiskConfig = DEFAULT_RISK_CONFIG,
 ): Promise<TradeRecord[]> {
+  const db = await getDb();
   const openTrades = await db.query.botTrades.findMany({
     where: (t: any, { eq: e }: any) => e(t.status, 'open'),
   });
@@ -208,6 +211,7 @@ export async function closeTrade(
   exitType: string,
   exitReason: string,
 ): Promise<TradeRecord | null> {
+  const db = await getDb();
   const trade = await db.query.botTrades.findFirst({
     where: (t: any, { eq: e }: any) => e(t.id, tradeId),
   });
@@ -293,6 +297,7 @@ export async function closeTrade(
 
 /** Update portfolio total value including open positions */
 async function updatePortfolioValue(currentPrices: Map<string, number>) {
+  const db = await getDb();
   const portfolio = await db.query.botPortfolio.findFirst({
     where: (p: any, { eq: e }: any) => e(p.id, 1),
   });
@@ -320,6 +325,7 @@ async function updatePortfolioValue(currentPrices: Map<string, number>) {
 
 /** Reset the paper trading portfolio */
 export async function resetPortfolio(initialCapital = 100000) {
+  const db = await getDb();
   // Delete all trades
   await db.delete(botTrades);
 
