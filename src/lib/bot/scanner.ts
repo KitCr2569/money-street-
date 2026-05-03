@@ -1,6 +1,6 @@
 import { getHistory, getQuotes } from '@/lib/yahoo';
 import { analyzeStock, generateSignal, type BotSignal } from './bot-engine';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { botSignals, botSettings } from '@/db/schema';
 import { STOCK_CATEGORIES } from '@/lib/stock-categories';
 
@@ -39,6 +39,9 @@ const DEFAULT_SYMBOLS = [
 /** Get configured symbols to scan */
 export async function getScanSymbols(): Promise<string[]> {
   try {
+    const db = await getDB();
+    if (!db || !db.query) return DEFAULT_SYMBOLS;
+    
     const settings = await db.query.botSettings.findFirst({
       where: (s: any, { eq }: any) => eq(s.id, 1),
     });
@@ -136,41 +139,53 @@ export async function scanStocks(
   // Save signals to database
   if (saveSignals) {
     console.log(`Saving ${filteredSignals.length} signals to database...`);
-    for (const signal of filteredSignals) {
-      try {
-        console.log(`Saving signal for ${signal.symbol}...`);
-
-        await db.insert(botSignals).values({
-          symbol: signal.symbol,
-          signalType: signal.signal,
-          totalScore: signal.totalScore,
-          normalizedScore: signal.normalizedScore,
-          strategy: signal.strategy,
-          confidence: signal.confidence,
-          price: signal.price,
-          stopLoss: signal.stopLoss,
-          takeProfit1: signal.takeProfit1,
-          factors: JSON.stringify(signal.factors),
-          executed: false,
-        });
-        console.log(`Successfully saved signal for ${signal.symbol}`);
-      } catch (err) {
-        console.error(`Failed to save signal for ${signal.symbol}:`, err);
-        errors.push(`DB: ${signal.symbol}: ${err instanceof Error ? err.message : 'Save failed'}`);
-      }
-    }
-
-    // Update last scan time
+    
     try {
-      const existing = await db.query.botSettings.findFirst({
-        where: (s: any, { eq }: any) => eq(s.id, 1),
-      });
-      if (existing) {
-        await db.update(botSettings)
-          .set({ lastScanAt: new Date().toISOString() })
-          .where((await import('drizzle-orm')).eq(botSettings.id, 1));
+      const db = await getDB();
+      if (!db || !db.query) {
+        console.error('Database not available, skipping save');
+        errors.push('DB: Database not initialized');
+      } else {
+        for (const signal of filteredSignals) {
+          try {
+            console.log(`Saving signal for ${signal.symbol}...`);
+
+            await db.insert(botSignals).values({
+              symbol: signal.symbol,
+              signalType: signal.signal,
+              totalScore: signal.totalScore,
+              normalizedScore: signal.normalizedScore,
+              strategy: signal.strategy,
+              confidence: signal.confidence,
+              price: signal.price,
+              stopLoss: signal.stopLoss,
+              takeProfit1: signal.takeProfit1,
+              factors: JSON.stringify(signal.factors),
+              executed: false,
+            });
+            console.log(`Successfully saved signal for ${signal.symbol}`);
+          } catch (err) {
+            console.error(`Failed to save signal for ${signal.symbol}:`, err);
+            errors.push(`DB: ${signal.symbol}: ${err instanceof Error ? err.message : 'Save failed'}`);
+          }
+        }
+
+        // Update last scan time
+        try {
+          const existing = await db.query.botSettings.findFirst({
+            where: (s: any, { eq }: any) => eq(s.id, 1),
+          });
+          if (existing) {
+            await db.update(botSettings)
+              .set({ lastScanAt: new Date().toISOString() })
+              .where((await import('drizzle-orm')).eq(botSettings.id, 1));
+          }
+        } catch { /* ignore */ }
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Database save failed:', err);
+      errors.push('DB: ' + (err instanceof Error ? err.message : 'Save failed'));
+    }
   }
 
   const buySignals = filteredSignals.filter(s =>
