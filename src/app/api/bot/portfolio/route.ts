@@ -37,15 +37,15 @@ export async function GET() {
     const holdings = openTrades.map((t: any) => {
       const currentPrice = prices.get(t.symbol) ?? t.entryPrice;
       const isBuy = t.side === 'buy';
-      
-      const unrealizedPnl = isBuy 
+
+      const unrealizedPnl = isBuy
         ? (currentPrice - t.entryPrice) * t.shares
         : (t.entryPrice - currentPrice) * t.shares;
-        
+
       const unrealizedPnlPct = isBuy
         ? ((currentPrice - t.entryPrice) / t.entryPrice) * 100
         : ((t.entryPrice - currentPrice) / t.entryPrice) * 100;
-        
+
       totalUnrealizedPnl += unrealizedPnl;
       totalHoldingsValue += currentPrice * t.shares;
 
@@ -57,18 +57,15 @@ export async function GET() {
       };
     });
 
-    const performance = await db.query.botSettings.findFirst({
-      where: (p: any, { eq }: any) => eq(p.id, 1),
-    });
-
     const portfolioRecord = await db.query.botPortfolio.findFirst({
-      where: (p: any, { eq }: any) => eq(p.id, 1),
+      where: (p, { eq }) => eq(p.id, 1),
     });
 
     if (!portfolioRecord) throw new Error('Portfolio not found');
 
-    const liveTotalValue = Math.round((portfolioRecord.cash + totalHoldingsValue) * 100) / 100;
-    const finalTotalPnl = portfolioRecord.totalPnl + totalUnrealizedPnl;
+    const liveTotalValue = Math.round((portfolio.cash + totalHoldingsValue) * 100) / 100;
+    const finalTotalPnl = portfolio.totalPnl + totalUnrealizedPnl;
+    const initialCapital = portfolioRecord.initialCapital ?? 100000;
     const newPeakValue = Math.max(portfolioRecord.peakValue, liveTotalValue);
 
     await db.update(botPortfolio).set({
@@ -77,24 +74,24 @@ export async function GET() {
       updatedAt: new Date().toISOString(),
     }).where(eq(botPortfolio.id, 1));
 
-    const winRate = portfolioRecord && portfolioRecord.totalTrades > 0
+    const winRate = portfolioRecord.totalTrades > 0
       ? (portfolioRecord.winTrades / portfolioRecord.totalTrades) * 100
       : 0;
 
     return NextResponse.json({
-      cash: portfolioRecord.cash,
+      cash: portfolio.cash,
       totalValue: liveTotalValue,
       peakValue: newPeakValue,
-      initialCapital: portfolioRecord?.initialCapital ?? 100000,
+      initialCapital,
       totalPnl: Math.round(finalTotalPnl * 100) / 100,
-      totalPnlPct: portfolioRecord?.initialCapital
-        ? (finalTotalPnl / portfolioRecord.initialCapital) * 100
+      totalPnlPct: initialCapital > 0
+        ? (finalTotalPnl / initialCapital) * 100
         : 0,
       drawdown: (portfolio as any).currentDrawdown * 100,
       openPositions: (portfolio as any).openPositions,
-      totalTrades: portfolioRecord?.totalTrades ?? 0,
-      winTrades: portfolioRecord?.winTrades ?? 0,
-      lossTrades: portfolioRecord?.lossTrades ?? 0,
+      totalTrades: portfolioRecord.totalTrades ?? 0,
+      winTrades: portfolioRecord.winTrades ?? 0,
+      lossTrades: portfolioRecord.lossTrades ?? 0,
       winRate: Math.round(winRate * 100) / 100,
       holdings,
       isAlpaca: false,
