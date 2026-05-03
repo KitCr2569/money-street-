@@ -36,28 +36,25 @@ export async function getDB() {
 /**
  * Global DB proxy that ensures getDB is called before any operation
  */
-export const db = new Proxy({} as any, {
+const createTableProxy = (table: string) => new Proxy(() => {}, {
+  get(target, method) {
+    return (...args: any[]) => getDB().then(db => (db.query as any)[table][method](...args));
+  }
+});
+
+const queryProxy = new Proxy(() => {}, {
+  get(target, table) {
+    return createTableProxy(String(table));
+  }
+});
+
+export const db = new Proxy(() => {}, {
   get(target, prop) {
-    return new Proxy(() => {}, {
-      apply(target, thisArg, args) {
-        return getDB().then(db => db[prop](...args));
-      },
-      get(target, subProp) {
-        // Handle db.query.xxx
-        if (prop === 'query') {
-          return new Proxy({}, {
-            get(target, table) {
-              return new Proxy({}, {
-                get(target, method) {
-                  return (...args: any[]) => getDB().then(db => db.query[table][method](...args));
-                }
-              });
-            }
-          });
-        }
-        return (...args: any[]) => getDB().then(db => db[prop][subProp](...args));
-      }
-    });
+    if (prop === 'query') return queryProxy;
+    return (...args: any[]) => getDB().then(db => (db as any)[prop](...args));
+  },
+  apply(target, thisArg, args) {
+    return getDB().then(db => (db as any)(...args));
   }
 });
 
