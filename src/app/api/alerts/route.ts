@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { priceAlerts } from '@/db/schema';
 import { requireAuth } from '@/lib/api-auth';
 
@@ -8,6 +8,11 @@ export async function GET() {
   if (error) return error;
 
   try {
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     const alerts = await db.query.priceAlerts.findMany({
       orderBy: (t: any, { desc }: any) => [desc(t.createdAt)],
     });
@@ -54,6 +59,11 @@ export async function POST(request: NextRequest) {
     };
 
     // Replace all alerts
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     await db.delete(priceAlerts);
 
     for (const a of alerts) {
