@@ -71,11 +71,17 @@ export function getAvailableCategories(): { id: string; name: string; count: num
  */
 export async function scanStocks(
   symbols?: string[],
-  options: { minScore?: number; saveSignals?: boolean } = {},
+  options: { minScore?: number; saveSignals?: boolean; maxSymbols?: number } = {},
 ): Promise<ScanResult> {
   const startTime = Date.now();
-  const { minScore = 0, saveSignals = true } = options;
-  const symbolList = symbols ?? await getScanSymbols();
+  const { minScore = 0, saveSignals = true, maxSymbols } = options;
+  let symbolList = symbols ?? await getScanSymbols();
+  
+  // Limit symbols for Vercel serverless environment
+  if (maxSymbols && symbolList.length > maxSymbols) {
+    symbolList = symbolList.slice(0, maxSymbols);
+    console.log(`⚠️ Symbol list truncated to ${maxSymbols} for serverless environment`);
+  }
   const signals: BotSignal[] = [];
   const errors: string[] = [];
 
@@ -193,8 +199,8 @@ export async function scanStocks(
 /**
  * Quick scan — returns buy/sell signals (score ≥ 1.5 or ≤ -1.5)
  */
-export async function quickScan(symbols?: string[]): Promise<ScanResult> {
-  return scanStocks(symbols, { minScore: 1.5 });
+export async function quickScan(maxSymbols?: number): Promise<ScanResult> {
+  return scanStocks(undefined, { minScore: 1.5, maxSymbols });
 }
 
 /**

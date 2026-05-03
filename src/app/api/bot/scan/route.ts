@@ -9,22 +9,36 @@ import { eq } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
-    // Add timeout to prevent hanging
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Scan timeout')), 15000)
-    );
-
     const body = await request.json().catch(() => ({}));
     const { symbols, autoTrade = false } = body as {
       symbols?: string[];
       autoTrade?: boolean;
     };
 
-    // Run scan with timeout
-    const result = await Promise.race([
-      scanStocks(symbols),
-      timeoutPromise
-    ]) as any;
+    // Detect if running on Vercel (serverless environment)
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+    
+    if (isVercel) {
+      // Vercel: Use timeout to prevent function timeout (max 60s on hobby plan)
+      const VERCEL_TIMEOUT = 45000; // 45 seconds to stay safe
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Scan timeout - Vercel limit')), VERCEL_TIMEOUT)
+      );
+      
+      const result = await Promise.race([
+        scanStocks(symbols, { maxSymbols: 20 }), // Limit symbols for Vercel
+        timeoutPromise
+      ]) as any;
+      
+      return NextResponse.json({
+        ...result,
+        executedTrades: [],
+        note: 'Vercel mode: Limited to 20 symbols max'
+      });
+    }
+    
+    // Local: Run without timeout
+    const result = await scanStocks(symbols);
 
     // Send LINE notifications for strong signals
     notifyScanResults(result).catch(err => console.error('Notify error:', err));
@@ -73,31 +87,59 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     console.error('Bot scan error:', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Scan failed' },
-      { status: 500 }
-    );
+    // Return proper structure even on error to prevent UI showing undefined/NaN
+    return NextResponse.json({
+      signals: [],
+      scannedCount: 0,
+      buySignals: 0,
+      sellSignals: 0,
+      errors: [err instanceof Error ? err.message : 'Scan failed'],
+      scanDuration: 0,
+      timestamp: new Date().toISOString(),
+      executedTrades: [],
+      error: err instanceof Error ? err.message : 'Scan failed'
+    }, { status: 200 }); // Return 200 with error info so UI can display gracefully
   }
 }
 
 export async function GET() {
   // Quick scan — strong signals only
   try {
-    // Add timeout to prevent hanging
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Quick scan timeout')), 10000)
-    );
-
-    const result = await Promise.race([
-      quickScan(),
-      timeoutPromise
-    ]) as any;
+    const isVercel = process.env.VERCEL === '1' || process.env.VERCEL_ENV !== undefined;
+    
+    if (isVercel) {
+      // Vercel: Quick scan with timeout
+      const VERCEL_TIMEOUT = 30000; // 30 seconds for quick scan
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Quick scan timeout - Vercel limit')), VERCEL_TIMEOUT)
+      );
+      
+      const result = await Promise.race([
+        quickScan(20), // Limit to 20 symbols for Vercel
+        timeoutPromise
+      ]) as any;
+      
+      return NextResponse.json({
+        ...result,
+        note: 'Vercel mode: Quick scan limited'
+      });
+    }
+    
+    // Local: Run without timeout
+    const result = await quickScan();
     return NextResponse.json(result);
   } catch (err) {
     console.error('Quick scan error:', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Quick scan failed' },
-      { status: 500 }
-    );
+    // Return proper structure even on error to prevent UI showing undefined/NaN
+    return NextResponse.json({
+      signals: [],
+      scannedCount: 0,
+      buySignals: 0,
+      sellSignals: 0,
+      errors: [err instanceof Error ? err.message : 'Quick scan failed'],
+      scanDuration: 0,
+      timestamp: new Date().toISOString(),
+      error: err instanceof Error ? err.message : 'Quick scan failed'
+    }, { status: 200 });
   }
 }
