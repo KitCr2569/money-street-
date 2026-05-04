@@ -49,6 +49,12 @@ export async function POST(request: NextRequest) {
       }>;
     };
 
+    // Get DB for operations
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     // Delete all existing
     await db.delete(portfolioLots);
     await db.delete(portfolioHoldings);

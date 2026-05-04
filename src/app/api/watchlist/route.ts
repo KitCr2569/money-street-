@@ -68,6 +68,12 @@ export async function POST(request: NextRequest) {
       activeListId: string;
     };
 
+    // Get DB for operations
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     // Delete all existing lists and items
     await db.delete(watchlistItems);
     await db.delete(watchlistLists);
