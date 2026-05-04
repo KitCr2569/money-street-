@@ -1,10 +1,48 @@
 import YahooFinance from 'yahoo-finance2';
 import type { StockQuote, Candle, SearchResult, RangeOption } from '@/types';
+import { getLatestPrices as getAlpacaPrices, isAlpacaConfigured } from './alpaca/client';
 
 const yf = new YahooFinance();
 yf._notices.suppress(['yahooSurvey']);
 
 export async function getQuotes(symbols: string[]): Promise<StockQuote[]> {
+  // Try Alpaca first for real-time prices if configured
+  if (isAlpacaConfigured() && process.env.USE_ALPACA_PRICES === 'true') {
+    try {
+      console.log('Using Alpaca for real-time prices...');
+      const alpacaPrices = await getAlpacaPrices(symbols);
+      
+      if (alpacaPrices.size > 0) {
+        return symbols.map(symbol => {
+          const price = alpacaPrices.get(symbol) || 0;
+          return {
+            symbol,
+            shortName: symbol,
+            regularMarketPrice: price,
+            regularMarketChange: 0,
+            regularMarketChangePercent: 0,
+            regularMarketVolume: 0,
+            regularMarketDayHigh: price,
+            regularMarketDayLow: price,
+            regularMarketOpen: price,
+            regularMarketPreviousClose: price,
+            fiftyTwoWeekHigh: price * 1.2,
+            fiftyTwoWeekLow: price * 0.8,
+            marketCap: 0,
+            currency: 'USD',
+            marketState: 'REGULAR',
+            quoteType: 'EQUITY',
+            dividendYield: 0,
+            exchange: '',
+          };
+        });
+      }
+    } catch (error) {
+      console.warn('Alpaca prices failed, falling back to Yahoo:', error);
+    }
+  }
+
+  // Fallback to Yahoo Finance
   try {
     const results = await yf.quote(symbols);
     const arr = Array.isArray(results) ? results : [results];

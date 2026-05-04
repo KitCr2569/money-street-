@@ -1,7 +1,9 @@
 import { getDB } from '@/db';
 import { botTrades, botPortfolio } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import * as crypto from 'crypto';
 import type { BotSignal } from './bot-engine';
+import { isAlpacaTradingEnabled, executeAlpacaBuy, executeAlpacaSell } from '../alpaca/trading';
 
 // Helper to get database instance
 async function getDb() {
@@ -89,7 +91,7 @@ export async function getPortfolioState(): Promise<PortfolioState> {
 export async function executeBuy(
   signal: BotSignal,
   config: RiskConfig = DEFAULT_RISK_CONFIG,
-): Promise<{ success: boolean; trade?: TradeRecord; reason?: string }> {
+): Promise<{ success: boolean; trade?: TradeRecord; reason?: string; alpacaOrderId?: string }> {
   try {
     const db = await getDb();
     const portfolio = await getPortfolioState();
@@ -135,6 +137,25 @@ export async function executeBuy(
       .where(eq(botPortfolio.id, 1));
     console.log(`💰 Portfolio updated: cash = ${newCash}`);
 
+    // Execute through Alpaca if enabled
+    let alpacaOrderId: string | undefined;
+    if (process.env.USE_ALPACA_TRADING === 'true' && isAlpacaTradingEnabled()) {
+      console.log(`🦙 Executing Alpaca buy for ${signal.symbol}...`);
+      const alpacaResult = await executeAlpacaBuy(
+        signal.symbol,
+        sizing.shares,
+        signal.stopLoss,
+        signal.takeProfit1
+      );
+      
+      if (alpacaResult.success && alpacaResult.order) {
+        alpacaOrderId = alpacaResult.order.id;
+        console.log(`✅ Alpaca order submitted: ${alpacaOrderId}`);
+      } else {
+        console.warn(`⚠️ Alpaca order failed: ${alpacaResult.error}`);
+      }
+    }
+
     const trade: TradeRecord = {
       id: tradeId,
       symbol: signal.symbol,
@@ -160,7 +181,7 @@ export async function executeBuy(
     // Notify
     notifyTradeExecution('buy', signal.symbol, sizing.shares, signal.price).catch(() => {});
 
-    return { success: true, trade };
+    return { success: true, trade, alpacaOrderId };
   } catch (error) {
     console.error(`❌ executeBuy error for ${signal.symbol}:`, error);
     return { success: false, reason: error instanceof Error ? error.message : 'Database error' };

@@ -20,6 +20,8 @@ REM Alpaca API credentials (Paper Trading)
 set ALPACA_API_KEY=PKJK7MHXQH32LNU6I4YJJAA4NQ
 set ALPACA_SECRET_KEY=87DfNnfZaLm1Gs39VHCPNkENn8UsUpXRofvVkZ1GsopT
 set ALPACA_PAPER=true
+set USE_ALPACA_PRICES=true
+set USE_ALPACA_TRADING=true
 
 echo Installing dependencies (if missing)...
 call npm install
