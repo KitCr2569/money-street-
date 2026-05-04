@@ -32,6 +32,7 @@ export interface PortfolioState {
   currentDrawdown: number;
   openPositions: number;
   totalPnl: number;
+  totalTrades?: number;
 }
 
 export const DEFAULT_RISK_CONFIG: RiskConfig = {

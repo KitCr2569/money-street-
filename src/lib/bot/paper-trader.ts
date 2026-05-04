@@ -69,6 +69,7 @@ export async function getPortfolioState(): Promise<PortfolioState> {
       currentDrawdown: 0,
       openPositions: 0,
       totalPnl: 0,
+      totalTrades: 0,
     };
   }
 
@@ -84,6 +85,7 @@ export async function getPortfolioState(): Promise<PortfolioState> {
     currentDrawdown: p.peakValue > 0 ? (p.peakValue - p.totalValue) / p.peakValue : 0,
     openPositions: openTrades.length,
     totalPnl: p.totalPnl,
+    totalTrades: p.totalTrades ?? 0,
   };
 }
 
@@ -130,12 +132,17 @@ export async function executeBuy(
     });
     console.log(`✅ Trade ${tradeId} inserted successfully`);
 
-    // Update portfolio cash
+    // Update portfolio cash and trade count
     const newCash = portfolio.cash - sizing.investmentAmount;
+    const currentTotalTrades = portfolio.totalTrades ?? 0;
     await db.update(botPortfolio)
-      .set({ cash: newCash, updatedAt: new Date().toISOString() })
+      .set({ 
+        cash: newCash, 
+        totalTrades: currentTotalTrades + 1,
+        updatedAt: new Date().toISOString() 
+      })
       .where(eq(botPortfolio.id, 1));
-    console.log(`💰 Portfolio updated: cash = ${newCash}`);
+    console.log(`💰 Portfolio updated: cash = ${newCash}, totalTrades = ${currentTotalTrades + 1}`);
 
     // Execute through Alpaca if enabled
     let alpacaOrderId: string | undefined;
@@ -287,9 +294,8 @@ export async function closeTrade(
       totalValue: newTotalValue,
       peakValue: newPeakValue,
       totalPnl: Math.round(newTotalPnl * 100) / 100,
-      totalTrades: portfolio.totalTrades + 1,
       winTrades: portfolio.winTrades + (isWin ? 1 : 0),
-      lossTrades: portfolio.winTrades + (isWin ? 0 : 1),
+      lossTrades: portfolio.lossTrades + (isWin ? 0 : 1),
       updatedAt: now,
     }).where(eq(botPortfolio.id, 1));
 
