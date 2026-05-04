@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { portfolioHoldings, portfolioLots } from '@/db/schema';
 import { requireAuth } from '@/lib/api-auth';
 
@@ -8,6 +8,11 @@ export async function GET() {
   if (error) return error;
 
   try {
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     const holdings = await db.query.portfolioHoldings.findMany();
 
     const lots = await db.query.portfolioLots.findMany();

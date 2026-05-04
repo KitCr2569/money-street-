@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/db';
+import { getDB } from '@/db';
 import { watchlistLists, watchlistItems, userSettings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { requireAuth } from '@/lib/api-auth';
@@ -9,6 +9,11 @@ export async function GET() {
   if (error) return error;
 
   try {
+    const db = await getDB();
+    if (!db || !db.query) {
+      throw new Error('Database not initialized');
+    }
+    
     const lists = await db.query.watchlistLists.findMany({
       orderBy: (t: any, { asc }: any) => [asc(t.createdAt)],
     });
