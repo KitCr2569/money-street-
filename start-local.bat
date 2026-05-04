@@ -16,6 +16,11 @@ set USE_LOCAL_DB=true
 set NEXTAUTH_SECRET=your-secret-key-here
 set NEXTAUTH_URL=http://localhost:3000
 
+REM Alpaca API credentials (Paper Trading)
+set ALPACA_API_KEY=PKJK7MHXQH32LNU6I4YJJAA4NQ
+set ALPACA_SECRET_KEY=87DfNnfZaLm1Gs39VHCPNkENn8UsUpXRofvVkZ1GsopT
+set ALPACA_PAPER=true
+
 echo Installing dependencies (if missing)...
 call npm install
 
