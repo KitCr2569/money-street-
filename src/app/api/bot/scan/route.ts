@@ -45,37 +45,49 @@ export async function POST(request: Request) {
 
     // Auto-trade if enabled: execute buy for strong signals
     const executedTrades = [];
+    console.log(`🤖 Auto-trade enabled: ${autoTrade}, signals found: ${result.signals.length}`);
+    
     if (autoTrade) {
       const buySignals = result.signals.filter(
         (s: any) => s.signal === 'strong_buy' || s.signal === 'buy'
       );
+      console.log(`📊 Buy signals: ${buySignals.length} (strong_buy or buy)`);
 
       // Get DB and settings for auto-trade
       const db = await getDB();
       if (!db || !db.query) {
-        console.error('Database not available for auto-trade');
+        console.error('❌ Database not available for auto-trade');
       } else {
         const settings = await db.query.botSettings.findFirst({
           where: (s: any, { eq: e }: any) => e(s.id, 1),
         });
+        console.log(`⚙️ Bot settings: enabled=${settings?.enabled}, autoTrade=${settings?.autoTrade}, useAiConfirm=${settings?.useAiConfirm}`);
 
         for (const signal of buySignals.slice(0, 3)) {
+          console.log(`🎯 Processing signal: ${signal.symbol} (${signal.signal})`);
+          
           // AI confirmation check
           let aiOk = true;
           if (settings?.useAiConfirm) {
+            console.log(`🤖 Checking AI confirmation for ${signal.symbol}...`);
             const aiResult = await confirmSignalWithAI(signal);
             aiOk = aiResult.confirmed;
+            console.log(`🤖 AI result: confirmed=${aiResult.confirmed}`);
             if (aiResult.adjustedStopLoss) signal.stopLoss = aiResult.adjustedStopLoss;
           }
 
           if (aiOk) {
+            console.log(`🚀 Executing buy for ${signal.symbol}...`);
             const trade = await executeBuy(signal);
+            console.log(`📈 Trade result: success=${trade.success}, reason=${trade.reason || 'none'}`);
             if (trade.success) {
               executedTrades.push(trade.trade);
               console.log(`✅ Trade executed: ${signal.symbol}`);
             } else {
               console.log(`❌ Trade failed: ${signal.symbol} - ${trade.reason}`);
             }
+          } else {
+            console.log(`⏭️ Skipped ${signal.symbol} - AI rejected`);
           }
         }
       }
