@@ -18,7 +18,7 @@ set NEXTAUTH_URL=http://localhost:3000
 
 REM Alpaca API credentials (Paper Trading)
 set ALPACA_API_KEY=PKYT6BWD7TJOGECYU4BPWJJAR5
-set "ALPACA_SECRET_KEY=5pjf2rLNNPKYJwmjoLN2rbmjMM6MyuG6ty2toEaJppjA"
+set ALPACA_SECRET_KEY=5pjf2rLNNPKYJwmjoLN2rbmjMM6MyuG6ty2toEaJppjA
 set ALPACA_PAPER=true
 set USE_ALPACA_PRICES=true
 set USE_ALPACA_TRADING=true
