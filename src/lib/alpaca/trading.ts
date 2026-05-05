@@ -5,12 +5,20 @@
 
 import { getLatestPrices } from './client';
 
-const ALPACA_BASE_URL = process.env.ALPACA_PAPER === 'true' 
-  ? 'https://paper-api.alpaca.markets/v2'
-  : 'https://api.alpaca.markets/v2';
+// Trading API URL (for orders, positions, account)
+function getTradingBaseUrl(): string {
+  return process.env.ALPACA_PAPER === 'true' 
+    ? 'https://paper-api.alpaca.markets/v2'
+    : 'https://api.alpaca.markets/v2';
+}
 
-const API_KEY = process.env.ALPACA_API_KEY;
-const SECRET_KEY = process.env.ALPACA_SECRET_KEY;
+function getApiKey(): string | undefined {
+  return process.env.ALPACA_API_KEY;
+}
+
+function getSecretKey(): string | undefined {
+  return process.env.ALPACA_SECRET_KEY;
+}
 
 interface AlpacaOrder {
   id: string;
@@ -29,7 +37,7 @@ interface AlpacaOrder {
  * Check if Alpaca trading is available
  */
 export function isAlpacaTradingEnabled(): boolean {
-  return !!(API_KEY && SECRET_KEY);
+  return !!(getApiKey() && getSecretKey());
 }
 
 /**
@@ -41,17 +49,20 @@ export async function executeAlpacaBuy(
   stopLoss?: number,
   takeProfit?: number
 ): Promise<{ success: boolean; order?: AlpacaOrder; error?: string }> {
-  if (!API_KEY || !SECRET_KEY) {
+  const apiKey = getApiKey();
+  const secretKey = getSecretKey();
+  
+  if (!apiKey || !secretKey) {
     return { success: false, error: 'Alpaca API not configured' };
   }
 
   try {
     // Submit market order
-    const response = await fetch(`${ALPACA_BASE_URL}/orders`, {
+    const response = await fetch(`${getTradingBaseUrl()}/orders`, {
       method: 'POST',
       headers: {
-        'APCA-API-KEY-ID': API_KEY,
-        'APCA-API-SECRET-KEY': SECRET_KEY,
+        'APCA-API-KEY-ID': apiKey,
+        'APCA-API-SECRET-KEY': secretKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -92,16 +103,19 @@ export async function executeAlpacaSell(
   symbol: string, 
   qty: number
 ): Promise<{ success: boolean; order?: AlpacaOrder; error?: string }> {
-  if (!API_KEY || !SECRET_KEY) {
+  const apiKey = getApiKey();
+  const secretKey = getSecretKey();
+  
+  if (!apiKey || !secretKey) {
     return { success: false, error: 'Alpaca API not configured' };
   }
 
   try {
-    const response = await fetch(`${ALPACA_BASE_URL}/orders`, {
+    const response = await fetch(`${getTradingBaseUrl()}/orders`, {
       method: 'POST',
       headers: {
-        'APCA-API-KEY-ID': API_KEY,
-        'APCA-API-SECRET-KEY': SECRET_KEY,
+        'APCA-API-KEY-ID': apiKey,
+        'APCA-API-SECRET-KEY': secretKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -132,15 +146,18 @@ export async function executeAlpacaSell(
  * Get current positions from Alpaca
  */
 export async function getAlpacaPositions(): Promise<Array<{ symbol: string; qty: number; avgPrice: number }>> {
-  if (!API_KEY || !SECRET_KEY) {
+  const apiKey = getApiKey();
+  const secretKey = getSecretKey();
+  
+  if (!apiKey || !secretKey) {
     return [];
   }
 
   try {
-    const response = await fetch(`${ALPACA_BASE_URL}/positions`, {
+    const response = await fetch(`${getTradingBaseUrl()}/positions`, {
       headers: {
-        'APCA-API-KEY-ID': API_KEY,
-        'APCA-API-SECRET-KEY': SECRET_KEY,
+        'APCA-API-KEY-ID': apiKey,
+        'APCA-API-SECRET-KEY': secretKey,
       },
     });
 
@@ -172,15 +189,18 @@ export async function getAlpacaPositions(): Promise<Array<{ symbol: string; qty:
  * Get buying power from Alpaca
  */
 export async function getAlpacaBuyingPower(): Promise<number> {
-  if (!API_KEY || !SECRET_KEY) {
+  const apiKey = getApiKey();
+  const secretKey = getSecretKey();
+  
+  if (!apiKey || !secretKey) {
     return 0;
   }
 
   try {
-    const response = await fetch(`${ALPACA_BASE_URL}/account`, {
+    const response = await fetch(`${getTradingBaseUrl()}/account`, {
       headers: {
-        'APCA-API-KEY-ID': API_KEY,
-        'APCA-API-SECRET-KEY': SECRET_KEY,
+        'APCA-API-KEY-ID': apiKey,
+        'APCA-API-SECRET-KEY': secretKey,
       },
     });
 

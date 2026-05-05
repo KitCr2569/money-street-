@@ -3,12 +3,23 @@
  * For real-time stock prices and paper trading
  */
 
-const ALPACA_BASE_URL = process.env.ALPACA_PAPER === 'true' 
-  ? 'https://paper-api.alpaca.markets/v2'
-  : 'https://api.alpaca.markets/v2';
+// Data API URL (for stock prices)
+const ALPACA_DATA_URL = 'https://data.alpaca.markets/v2';
 
-const API_KEY = process.env.ALPACA_API_KEY;
-const SECRET_KEY = process.env.ALPACA_SECRET_KEY;
+// Trading API URL (for orders, account)
+function getTradingBaseUrl(): string {
+  return process.env.ALPACA_PAPER === 'true' 
+    ? 'https://paper-api.alpaca.markets/v2'
+    : 'https://api.alpaca.markets/v2';
+}
+
+function getApiKey(): string | undefined {
+  return process.env.ALPACA_API_KEY;
+}
+
+function getSecretKey(): string | undefined {
+  return process.env.ALPACA_SECRET_KEY;
+}
 
 interface AlpacaBar {
   t: string;  // timestamp
@@ -35,7 +46,10 @@ interface AlpacaQuote {
 export async function getLatestPrices(symbols: string[]): Promise<Map<string, number>> {
   const prices = new Map<string, number>();
   
-  if (!API_KEY || !SECRET_KEY) {
+  const apiKey = getApiKey();
+  const secretKey = getSecretKey();
+  
+  if (!apiKey || !secretKey) {
     console.warn('Alpaca API keys not configured, using mock prices');
     return prices;
   }
@@ -47,12 +61,13 @@ export async function getLatestPrices(symbols: string[]): Promise<Map<string, nu
       const chunk = symbols.slice(i, i + chunkSize);
       const symbolsParam = chunk.join(',');
       
+      // Use DATA API for stock prices (not trading API)
       const response = await fetch(
-        `${ALPACA_BASE_URL}/stocks/snapshots?symbols=${symbolsParam}`,
+        `${ALPACA_DATA_URL}/stocks/snapshots?symbols=${symbolsParam}&feed=iex`,
         {
           headers: {
-            'APCA-API-KEY-ID': API_KEY,
-            'APCA-API-SECRET-KEY': SECRET_KEY,
+            'APCA-API-KEY-ID': apiKey,
+            'APCA-API-SECRET-KEY': secretKey,
           },
         }
       );
@@ -94,15 +109,18 @@ export async function getStockPrice(symbol: string): Promise<number | null> {
  * Get account info from Alpaca
  */
 export async function getAlpacaAccount() {
-  if (!API_KEY || !SECRET_KEY) {
+  const apiKey = getApiKey();
+  const secretKey = getSecretKey();
+  
+  if (!apiKey || !secretKey) {
     return null;
   }
 
   try {
-    const response = await fetch(`${ALPACA_BASE_URL}/account`, {
+    const response = await fetch(`${getTradingBaseUrl()}/account`, {
       headers: {
-        'APCA-API-KEY-ID': API_KEY,
-        'APCA-API-SECRET-KEY': SECRET_KEY,
+        'APCA-API-KEY-ID': apiKey,
+        'APCA-API-SECRET-KEY': secretKey,
       },
     });
 
@@ -121,5 +139,5 @@ export async function getAlpacaAccount() {
  * Check if Alpaca is configured
  */
 export function isAlpacaConfigured(): boolean {
-  return !!(API_KEY && SECRET_KEY);
+  return !!(getApiKey() && getSecretKey());
 }
