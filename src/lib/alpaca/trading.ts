@@ -52,6 +52,11 @@ export async function executeAlpacaBuy(
   const apiKey = getApiKey();
   const secretKey = getSecretKey();
   
+  // Debug logging
+  console.log('[Alpaca Trading Debug] API Key loaded:', apiKey ? 'Yes' : 'No');
+  console.log('[Alpaca Trading Debug] Secret Key loaded:', secretKey ? 'Yes' : 'No');
+  console.log('[Alpaca Trading Debug] Trading URL:', getTradingBaseUrl());
+  
   if (!apiKey || !secretKey) {
     return { success: false, error: 'Alpaca API not configured' };
   }

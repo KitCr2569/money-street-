@@ -49,6 +49,10 @@ export async function getLatestPrices(symbols: string[]): Promise<Map<string, nu
   const apiKey = getApiKey();
   const secretKey = getSecretKey();
   
+  // Debug logging
+  console.log('[Alpaca Debug] API Key loaded:', apiKey ? 'Yes (length: ' + apiKey.length + ')' : 'No');
+  console.log('[Alpaca Debug] Secret Key loaded:', secretKey ? 'Yes (length: ' + secretKey.length + ')' : 'No');
+  
   if (!apiKey || !secretKey) {
     console.warn('Alpaca API keys not configured, using mock prices');
     return prices;
