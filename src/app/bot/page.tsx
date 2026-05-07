@@ -38,6 +38,7 @@ interface HoldingData {
   currentPrice: number;
   unrealizedPnl: number;
   unrealizedPnlPct: number;
+  marketValue?: number;
 }
 
 interface SignalData {
@@ -241,6 +242,7 @@ export default function BotDashboard() {
                   <th className="text-right py-1.5 px-2">จำนวน</th>
                   <th className="text-right py-1.5 px-2">ราคาเข้า</th>
                   <th className="text-right py-1.5 px-2">ราคาปัจจุบัน</th>
+                  <th className="text-right py-1.5 px-2">มูลค่า</th>
                   <th className="text-right py-1.5 px-2">P&L</th>
                   <th className="text-right py-1.5 px-2">%</th>
                   <th className="text-right py-1.5 px-2">SL</th>
@@ -255,6 +257,7 @@ export default function BotDashboard() {
                     <td className="text-right py-1.5 px-2">{h.shares}</td>
                     <td className="text-right py-1.5 px-2">${h.entryPrice.toFixed(2)}</td>
                     <td className="text-right py-1.5 px-2">${h.currentPrice.toFixed(2)}</td>
+                    <td className="text-right py-1.5 px-2">${(h.marketValue ?? (h.currentPrice * h.shares)).toFixed(2)}</td>
                     <td className={`text-right py-1.5 px-2 font-medium ${pnlColor(h.unrealizedPnl)}`}>
                       ${h.unrealizedPnl.toFixed(2)}
                     </td>

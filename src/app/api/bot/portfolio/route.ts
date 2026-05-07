@@ -75,14 +75,32 @@ export async function GET() {
     const initialCapital = portfolioRecord.initialCapital ?? 100000;
     const newPeakValue = Math.max(portfolioRecord.peakValue, liveTotalValue);
 
+    // Recalculate totalTrades from actual DB if it's 0 (for backward compatibility)
+    let totalTrades = portfolioRecord.totalTrades ?? 0;
+    if (totalTrades === 0) {
+      const allTrades = await db.query.botTrades.findMany();
+      totalTrades = allTrades.length;
+    }
+
+    console.log('[Portfolio Debug] cash:', portfolio.cash);
+    console.log('[Portfolio Debug] totalHoldingsValue:', totalHoldingsValue);
+    console.log('[Portfolio Debug] liveTotalValue:', liveTotalValue);
+    console.log('[Portfolio Debug] portfolio.totalPnl (realized):', portfolio.totalPnl);
+    console.log('[Portfolio Debug] totalUnrealizedPnl:', totalUnrealizedPnl);
+    console.log('[Portfolio Debug] finalTotalPnl:', finalTotalPnl);
+    console.log('[Portfolio Debug] initialCapital:', initialCapital);
+    console.log('[Portfolio Debug] totalPnlPct:', (finalTotalPnl / initialCapital) * 100);
+    console.log('[Portfolio Debug] totalTrades:', totalTrades);
+
     await db.update(botPortfolio).set({
       totalValue: liveTotalValue,
       peakValue: newPeakValue,
+      totalTrades: totalTrades > 0 ? totalTrades : portfolioRecord.totalTrades,
       updatedAt: new Date().toISOString(),
     }).where(eq(botPortfolio.id, 1));
 
-    const winRate = portfolioRecord.totalTrades > 0
-      ? (portfolioRecord.winTrades / portfolioRecord.totalTrades) * 100
+    const winRate = totalTrades > 0
+      ? (portfolioRecord.winTrades / totalTrades) * 100
       : 0;
 
     return NextResponse.json({
@@ -96,11 +114,14 @@ export async function GET() {
         : 0,
       drawdown: (portfolio as any).currentDrawdown * 100,
       openPositions: (portfolio as any).openPositions,
-      totalTrades: portfolioRecord.totalTrades ?? 0,
+      totalTrades: totalTrades,
       winTrades: portfolioRecord.winTrades ?? 0,
       lossTrades: portfolioRecord.lossTrades ?? 0,
       winRate: Math.round(winRate * 100) / 100,
-      holdings,
+      holdings: holdings.map(h => ({
+        ...h,
+        marketValue: Math.round(h.currentPrice * h.shares * 100) / 100,
+      })),
       isAlpaca: false,
     });
   } catch (err) {
