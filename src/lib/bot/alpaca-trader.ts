@@ -8,10 +8,11 @@ import { notifyTradeExecution } from './notifications';
  */
 export function getAlpacaClient() {
   const keyId = process.env.ALPACA_API_KEY;
-  const secretKey = process.env.ALPACA_API_SECRET;
+  const secretKey = process.env.ALPACA_SECRET_KEY;
   const paper = process.env.ALPACA_PAPER === 'true';
 
   if (!keyId || !secretKey || keyId === 'your_alpaca_key_here') {
+    console.log('[Alpaca SDK] Missing keys - keyId:', !!keyId, 'secretKey:', !!secretKey);
     return null;
   }
 
