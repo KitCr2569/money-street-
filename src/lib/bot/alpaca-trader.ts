@@ -92,12 +92,16 @@ export async function getAlpacaPortfolioState() {
 
   try {
     const account = await alpaca.getAccount();
+    const equity = parseFloat(account.equity);
+    const lastEquity = parseFloat(account.last_equity);
+    const pnl = equity - lastEquity;
     return {
       cash: parseFloat(account.cash),
-      totalValue: parseFloat(account.equity),
-      peakValue: parseFloat(account.last_equity), // approximation
-      initialCapital: 100000, // assuming default for paper
-      totalPnl: parseFloat(account.equity) - 100000,
+      totalValue: equity,
+      peakValue: lastEquity,
+      initialCapital: lastEquity, // baseline for P&L calc
+      totalPnl: Math.round(pnl * 100) / 100,
+      totalPnlPct: lastEquity > 0 ? (pnl / lastEquity) * 100 : 0,
     };
   } catch (err) {
     console.error('❌ Failed to fetch Alpaca account:', err);
